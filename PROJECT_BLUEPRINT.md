@@ -1,9 +1,9 @@
-# zova — Autonomous Travel Assistant
+# Zova — Autonomous Travel Assistant
 
-> **Project blueprint, MVP specifications, technical design, evaluation plan, and Codex development workflow**  
-> Working title: **zova** (rename whenever you like)  
-> Status: **Planning / not yet implemented**  
-> Prepared: **2026-10-18**  
+> **Project blueprint, MVP specifications, technical design, evaluation plan, and Codex development workflow**
+> Official name: **Zova**
+> Status: **Long-term blueprint; first deterministic CLI slice implemented. See root README for current scope.**
+> Prepared: **2026-10-18**
 > Audience: project owner, coding agents, reviewers, and future contributors
 
 ---
@@ -196,10 +196,12 @@ from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
+
 class TimeBlock(BaseModel):
-    start: datetime   # timezone-aware; reject naive datetimes
+    start: datetime  # timezone-aware; reject naive datetimes
     end: datetime
     description: str
+
 
 class TravelerProfile(BaseModel):
     interests: list[str]
@@ -209,6 +211,7 @@ class TravelerProfile(BaseModel):
     pace: str  # validate: relaxed / balanced / packed
     preferred_modes: list[str]
     commitments: list[TimeBlock] = []
+
 
 class CandidateActivity(BaseModel):
     id: str
@@ -223,12 +226,14 @@ class CandidateActivity(BaseModel):
     retrieved_at: datetime
     price_is_estimate: bool = True
 
+
 class ItineraryStop(BaseModel):
     activity_id: str
     arrival_at: datetime
     depart_at: datetime
     travel_from_previous_minutes: int
     estimated_cost: Decimal
+
 
 class Itinerary(BaseModel):
     stops: list[ItineraryStop]
@@ -663,7 +668,7 @@ You should review the diff, run the app, and be able to explain the main control
 Copy and paste the following into Codex after placing the provided files in the repository:
 
 ```text
-You are working in my zova travel-agent repository.
+You are working in my Zova travel-agent repository.
 Read AGENTS.md, README.md, CHANGELOG.md, and docs/PROJECT_BLUEPRINT.md.
 
 Important: do NOT attempt to implement all three MVPs.
@@ -727,7 +732,7 @@ report what changed and what remains, and create a focused commit only if safe.
 
 At any point, `README.md` should answer:
 
-- What problem does zova solve?
+- What problem does Zova solve?
 - What works **today** versus what is planned?
 - One screenshot/GIF or a recorded demo link when available.
 - Installation prerequisites and **exact tested commands**.
@@ -936,7 +941,7 @@ These URLs are **documentation starting points**, not guarantees that all provid
 
 ### 90-second pitch
 
-> "I'm building zova, a personalized AI travel assistant that can investigate places and logistics using tools, then build and revise a feasible itinerary around an actual user's budget and schedule. I wanted to learn how to make agents reliable, so the LLM handles interpretation and tool selection while deterministic code checks constraints and permissions. My evaluation suite tests whether it stays within budget, respects existing commitments, and handles incomplete or adversarial information."
+> "I'm building Zova, a personalized AI travel assistant that can investigate places and logistics using tools, then build and revise a feasible itinerary around an actual user's budget and schedule. I wanted to learn how to make agents reliable, so the LLM handles interpretation and tool selection while deterministic code checks constraints and permissions. My evaluation suite tests whether it stays within budget, respects existing commitments, and handles incomplete or adversarial information."
 
 For B, replace the personalized planning demo with a cross-source itinerary conflict. For C, use the disruption simulator and its comparison/approval trace.
 

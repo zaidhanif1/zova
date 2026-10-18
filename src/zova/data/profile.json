@@ -1,0 +1,21 @@
+{
+  "name": "Alex (fictional)",
+  "destination": "New York City",
+  "budget": "60.00",
+  "currency": "USD",
+  "preferences": [
+    "architecture",
+    "thrift",
+    "street food"
+  ],
+  "trip": {
+    "start": "2026-10-24T09:00:00-04:00",
+    "end": "2026-10-24T18:00:00-04:00"
+  },
+  "unavailable": [
+    {
+      "start": "2026-10-24T14:00:00-04:00",
+      "end": "2026-10-24T16:00:00-04:00"
+    }
+  ]
+}

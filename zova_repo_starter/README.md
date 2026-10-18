@@ -1,5 +1,8 @@
 # Zova
 
+> Archived starter snapshot. For implemented functionality and current commands,
+> see the [project README](../README.md).
+
 **A personalized, constraint-aware AI travel assistant — planned project, currently in bootstrap.**
 
 Zova will explore how to build travel agents that use tools, make explainable recommendations, respect a user's actual constraints, and safely revise a plan when circumstances change.

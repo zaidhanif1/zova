@@ -1,9 +1,9 @@
 # Zova — Autonomous Travel Assistant
 
-> **Project blueprint, MVP specifications, technical design, evaluation plan, and Codex development workflow**  
-> Official name: **Zova**  
-> Status: **Planning / not yet implemented**  
-> Prepared: **2026-10-18**  
+> **Project blueprint, MVP specifications, technical design, evaluation plan, and Codex development workflow**
+> Official name: **Zova**
+> Status: **Long-term blueprint; first deterministic CLI slice implemented. See root README for current scope.**
+> Prepared: **2026-10-18**
 > Audience: project owner, coding agents, reviewers, and future contributors
 
 ---
@@ -196,10 +196,12 @@ from datetime import datetime
 from decimal import Decimal
 from pydantic import BaseModel, Field
 
+
 class TimeBlock(BaseModel):
-    start: datetime   # timezone-aware; reject naive datetimes
+    start: datetime  # timezone-aware; reject naive datetimes
     end: datetime
     description: str
+
 
 class TravelerProfile(BaseModel):
     interests: list[str]
@@ -209,6 +211,7 @@ class TravelerProfile(BaseModel):
     pace: str  # validate: relaxed / balanced / packed
     preferred_modes: list[str]
     commitments: list[TimeBlock] = []
+
 
 class CandidateActivity(BaseModel):
     id: str
@@ -223,12 +226,14 @@ class CandidateActivity(BaseModel):
     retrieved_at: datetime
     price_is_estimate: bool = True
 
+
 class ItineraryStop(BaseModel):
     activity_id: str
     arrival_at: datetime
     depart_at: datetime
     travel_from_previous_minutes: int
     estimated_cost: Decimal
+
 
 class Itinerary(BaseModel):
     stops: list[ItineraryStop]

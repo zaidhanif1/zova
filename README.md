@@ -1,80 +1,97 @@
 # Zova
 
-**A personalized, constraint-aware AI travel assistant — planned project, currently in bootstrap.**
+Zova is a learning project for a personalized AI travel assistant. The first
+working slice of **MVP A: Personalized Weekend Planner** is an offline Python CLI
+with deterministic planning. Agents, integrations, and other MVPs are future work.
 
-Zova will explore how to build travel agents that use tools, make explainable recommendations, respect a user's actual constraints, and safely revise a plan when circumstances change.
+## Install and run
 
-> **Status:** Initial project plan. No application code or live travel integrations have been implemented yet. Examples in the design document are synthetic and illustrative.
+Requires Python 3.12+. From the repository root, in PowerShell:
 
-## What we're building
-
-The project investigates a central engineering question:
-
-**Can an AI agent plan and adapt travel recommendations around real constraints while keeping factual checks, permissions, and consequential decisions under deterministic application control?**
-
-Three possible independently demonstrable MVPs are detailed in [the project blueprint](docs/PROJECT_BLUEPRINT.md):
-
-| MVP | User value | Engineering focus | Status |
-| --- | --- | --- | --- |
-| **A — Personalized Weekend Planner** | Tailored itinerary + revisions | Preferences, constraint-aware scheduling, tool use | **Selected first; not yet implemented** |
-| **B — Inbox-to-Itinerary Organizer** | Booking timeline + conflict detection | Extraction, cross-source reconciliation, privacy | Planned |
-| **C — Disruption Recovery Copilot** | Comparison of recovery options when plans change | Agent loops, tradeoffs, approval, evaluations | Planned |
-
-## Planned user experience (MVP A)
-
-Example *synthetic* request:
-
-> "Plan a Saturday in NYC for under $100. I like thrift stores and architecture, have a 2–4 PM meeting, and prefer walking/transit."
-
-Expected capabilities once implemented:
-
-1. Interpret preferences and fixed constraints.
-2. Retrieve activities and estimated route times from a fixture provider.
-3. Generate a feasible, costed itinerary.
-4. Explain why each stop was chosen and what assumptions were used.
-5. Replan when the user changes a preference or budget, preserving commitments.
-
-## Getting started
-
-**Not available yet:** This starter bundle intentionally contains only planning and contribution documents, not runnable code. Codex's initial task is to scaffold the project and replace this paragraph with **actual tested commands**.
-
-Proposed stack: Python 3.12+, FastAPI/Pydantic, SQLite, pytest, ruff, a lightweight user interface after the core CLI works, and a model tool-calling adapter once deterministic planning is tested.
-
-## Architecture approach
-
-```text
-User -> Request parser / agent -> authorized tool adapters (fixture first)
-                            -> deterministic itinerary planner
-                            -> validated recommendation + explanations
-                            -> optional saved draft / approval state
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -e ".[dev]"
+.venv/Scripts/python.exe -m zova
 ```
 
-- **Agent:** understand natural-language requests, select permitted tools, and explain tradeoffs.
-- **Planner:** enforce budgets, schedules, travel-time buffers, exclusions, and validity.
-- **Policy layer:** verify permissions and limit actions independently of the model.
-- **Evaluation suite:** reproduce errors and measure correctness without requiring live paid APIs.
+On macOS/Linux use `.venv/bin/python` instead of `.venv/Scripts/python.exe`.
+The installed `zova` console command also runs the same demo.
+Installation needs package-index access; the installed application and tests
+require no network, API keys, or environment variables.
 
-## Developer / Codex workflow
+## Demo
 
-Start with [`AGENTS.md`](AGENTS.md) for durable development conventions and [`docs/PROJECT_BLUEPRINT.md`](docs/PROJECT_BLUEPRINT.md) for requirements, issue IDs, data contracts, sample scenarios, testing criteria, and the first Codex prompt.
+Packaged JSON contains a fictional traveler in New York City on Saturday,
+October 24, 2026, a $60 USD budget, architecture/thrift/food preferences,
+a 2–4 PM commitment, and seven synthetic activities.
 
-Before each change: inspect Git state, choose one small acceptance-tested task, build it, test it, update documentation if behavior changes, and make a focused commit if authorized.
+The planner ranks candidates by matching interests, then start time and ID.
+It greedily accepts an addition only if the proposed plan passes validation,
+then returns stops chronologically. It skips candidates exceeding budget,
+overlapping commitments or activities, falling outside the trip, repeating IDs,
+or targeting a different destination/currency.
 
-## Privacy, data, and limitations
+Expected selected sessions (UTC−04:00):
 
-- Initial examples, locations, confirmations, costs, and disruptions are **synthetic or estimated**.
-- No actual travel availability, reservation, booking, cancellation, or purchase support is claimed.
-- No real Gmail, Calendar, banking, or personal account data is part of this starter.
-- A future real integration requires least-privilege credentials, permission enforcement, source-freshness metadata, redacted logs, and tested denial paths.
-- This is a learning/portfolio project, **not a production travel booking service**.
+- 09:00–10:30: Synthetic architecture walk, $20.
+- 11:00–12:00: Synthetic thrift browsing session, $10.
+- 12:00–13:00: Synthetic street food lunch, $15.
+- 16:00–17:00: Synthetic design gallery, $10.
 
-## Roadmap
+The CLI displays dated timestamps, unavailable windows, and
+`Estimated total: 55.00 / 60.00 USD`. All data is synthetic and costs are estimates.
+No reservation or real availability is implied. Budget excludes lodging,
+transport, taxes, tips, and purchases outside the listed estimates.
 
-- [ ] Establish a working synthetic CLI demo, typed schema, and tests.
-- [ ] Add deterministic feasibility and ranking.
-- [ ] Add a bounded tool-calling agent with mocked/offline tests.
-- [ ] Add replanning, versioning, and a minimal demo UI.
-- [ ] Evaluate reliability, failure modes, and prompt-injection resistance.
-- [ ] Decide whether to implement organizer or disruption MVP next.
+## Tests and checks
 
-See [CHANGELOG.md](CHANGELOG.md) for changes and the [blueprint](docs/PROJECT_BLUEPRINT.md) for concrete acceptance criteria.
+```powershell
+.venv/Scripts/python.exe -m pytest
+.venv/Scripts/python.exe -m ruff check .
+.venv/Scripts/python.exe -m ruff format --check .
+```
+
+Tests cover the exact demo, budget rejection, blocked-time and activity
+conflicts, touching boundaries, reduced budgets, empty input, duplicates,
+trip/destination constraints, malformed inputs, timezone offsets, and CLI entry
+paths. No static type checker or CI is configured yet.
+
+## Architecture
+
+- `src/zova/models.py`: Pydantic validation, aware time windows, Decimal money,
+  and typed profile/activity/itinerary models.
+- `src/zova/fixtures.py` and `src/zova/data/`: packaged JSON loading independent
+  of the current working directory.
+- `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
+- `src/zova/cli.py`: display the resulting itinerary.
+- `tests/`: offline regression and CLI tests.
+
+Pydantic rejects malformed data. `validate_plan` checks whether well-formed
+activities are feasible together. Keeping these jobs separate lets a future
+agent propose plans while Python still enforces constraints. Decimal avoids
+binary floating-point surprises. Intervals use `[start, end)`: ending at noon
+and starting at noon do not overlap.
+
+## Limits and next steps
+
+Activities have fixed sessions whose duration must match their interval;
+start times are not chosen within opening windows. Greedy selection is repeatable
+but does not find a globally optimal plan. No routing or transfer buffer is
+modeled, so schedule validity does not establish geographic feasibility.
+Empty results are reported explicitly.
+
+Next small tasks:
+
+1. Add fixture-path options and a budget override to the CLI, with error handling.
+2. Add synthetic travel times and enforce transfer buffers with tests.
+3. Explain skipped candidates and which preferences selected stops match.
+
+MVP B (Inbox-to-Itinerary Organizer) and MVP C (Disruption Recovery Copilot)
+remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API, frontend,
+storage, or deployment is included.
+
+See [AGENTS.md](AGENTS.md) for ongoing engineering instructions,
+[docs/PROJECT_BLUEPRINT.md](docs/PROJECT_BLUEPRINT.md) for long-term requirements,
+and [CHANGELOG.md](CHANGELOG.md) for implemented changes.
+The `zova_repo_starter` directory preserves starter documents; the root README
+and `docs/` are authoritative for current development.
