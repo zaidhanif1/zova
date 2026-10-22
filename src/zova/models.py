@@ -8,7 +8,7 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validato
 
 
 class Model(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True)
+    model_config = ConfigDict(extra="forbid", frozen=True) #frozen = immutability & extra = block unexpected payload attributes
 
 
 class TimeWindow(Model):

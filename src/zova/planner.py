@@ -38,7 +38,15 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
 
     Skip infeasible additions. This heuristic does not promise an optimal plan.
     """
+
+    # Convert the traveler's preferences into a set of lowercase strings
+    # so comparisons are case-insensitive.
     preferences = {value.casefold() for value in profile.preferences}
+
+    # Rank activities by:
+    # 1. Number of matching preferences (more matches = higher priority)
+    # 2. Earlier start time if preference matches are equal
+    # 3. Activity ID as a deterministic tie-breaker
     ranked = sorted(
         activities,
         key=lambda activity: (
@@ -47,14 +55,46 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
             activity.id,
         ),
     )
+
+    # Initialize an empty itinerary containing zero activities.
     plan = Itinerary(activities=())
+
+    # Consider each activity in order of preference ranking.
     for activity in ranked:
+
+        # Create a temporary itinerary containing all previously accepted
+        # activities PLUS the new activity we're considering.
+        #
+        # *plan.activities unpacks the existing activities into a new tuple.
+        # We do NOT modify the actual plan yet.
         proposal = Itinerary(activities=(*plan.activities, activity))
+
         try:
+            # Check whether adding this activity violates any constraints
+            # enforced by validate_plan (e.g., overlapping time slots or budget).
             validate_plan(profile, proposal)
+
         except PlanViolation:
+            # If the proposal violates a constraint, reject this activity.
+            # 'continue' skips the remaining code in this iteration
+            # and moves to the next activity in ranked.
             continue
+
+        # If validation succeeded, permanently accept the proposal.
+        # The proposed itinerary becomes our new current itinerary.
         plan = proposal
-    plan = Itinerary(activities=tuple(sorted(plan.activities, key=lambda a: a.schedule.start)))
+
+    # The activities were originally processed by preference ranking,
+    # so reorder the accepted activities chronologically by start time.
+    # Convert the sorted list back into a tuple.
+    plan = Itinerary(
+        activities=tuple(
+            sorted(plan.activities, key=lambda a: a.schedule.start)
+        )
+    )
+
+    # Perform one final validation of the complete itinerary.
     validate_plan(profile, plan)
+
+    # Return the completed itinerary containing all accepted activities.
     return plan
