@@ -23,7 +23,9 @@ def overlaps(left: TimeWindow, right: TimeWindow) -> bool:
 
 
 def validate_plan(profile: TravelerProfile, plan: Itinerary) -> None:
-    """Raise PlanViolation when a plan breaks a rule; otherwise return normally."""
+    """
+    Raise PlanViolation when a plan breaks a rule; otherwise return normally.
+    """
     # STEP 1: Check the total estimated cost.
     if plan.total_cost > profile.budget:
         raise PlanViolation("Plan exceeds budget")
@@ -95,23 +97,45 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
         return activity.id
 
     # STEP 4: Rank all activities.
+    # Make a separate list so sorting does not rearrange the caller's collection.
     ranked_activities = list(activities)
 
-    # Python keeps the previous order when sorting values that tie.
-    # Sort the least important rule first and the most important rule last.
+    # key tells Python which helper to call for each activity's sorting value.
+    # For example, key=get_start_time means "sort using each activity's start time."
+    #
+    # Python preserves the previous order of activities whose sorting values tie.
+    # Each new sort takes priority, but ties keep the order from earlier sorts.
+    # This is why we sort the least important rule first:
+    # ID first, start time second, matching interests last (highest priority).
+    #
+    # Example (illustrative activities, not the demo fixtures):
+    # D: Food market,       10 AM, 1 matching interest
+    # B: Building tour,     10 AM, 1 matching interest
+    # A: Museum,             9 AM, 1 matching interest
+    # C: Food + arch walk,  11 AM, 2 matching interests
+
     # Sort by ID first (final tie-breaker).
+    # Example order: A, B, C, D.
     ranked_activities.sort(key=get_id)
 
     # Then sort by start time (earlier first).
+    # Example order: A (9 AM), B (10 AM), D (10 AM), C (11 AM).
+    # B stays before D because their times tie, preserving their ID order.
     ranked_activities.sort(key=get_start_time)
 
-    # Finally, prioritize activities matching more interests.
+    # Finally, prioritize activities matching more interests (reverse=True).
+    # Example order: C (2 matches), A (1 match), B (1 match), D (1 match).
+    # C moves first. A, B, and D tie, so their previous order stays intact.
+    # Final priorities: more matches, then earlier time, then alphabetical ID.
+    # This only decides which activities to try first; validation comes next.
     ranked_activities.sort(key=count_matches, reverse=True)
 
     # STEP 5: Start with an empty list of accepted activities.
     accepted_activities: list[Activity] = []
 
     for activity in ranked_activities:
+
+
         # Make a copy of everything we have accepted.
         candidate_activities = accepted_activities.copy()
 
@@ -120,6 +144,9 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
 
         # Convert the list into an Itinerary.
         candidate_plan = Itinerary(activities=tuple(candidate_activities))
+
+        print(candidate_plan)
+        print("\n")
 
         # Check whether this itinerary is allowed.
         try:
