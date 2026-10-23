@@ -8,12 +8,11 @@ def main() -> int:
     profile, activities = load_demo()
     plan = build_itinerary(profile, activities)
 
+
     print(f"Zova | {profile.destination} | fictional traveler: {profile.name}")
-    print("SYNTHETIC DATA: fixed sessions and estimated costs; no live availability.")
-    print("Times include UTC offsets. Travel times are not modeled.")
 
     for block in profile.unavailable:
-        print(f"Unavailable: {block.start.isoformat()} to {block.end.isoformat()}")
+        print(f"Unavailable: {block.start} to {block.end}")
 
     for activity in plan.activities:
         print(
