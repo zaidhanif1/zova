@@ -70,6 +70,73 @@ def test_empty_candidates():
 
 
 @pytest.mark.parametrize(
+    "preferred_categories,preferred_start,preferred_end,preferred_id",
+    [
+        # More distinct interests win, even with a later start and a later ID.
+        (("ARCHITECTURE", "thrift"), "10:00", "11:30", "z-preferred"),
+        # With equal interest counts, an earlier start wins before ID is considered.
+        (("architecture",), "08:00", "09:30", "z-preferred"),
+        # With equal interests and start times, the smaller ID wins.
+        (("architecture",), "09:00", "10:30", "a-preferred"),
+    ],
+)
+def test_ranking_priorities(preferred_categories, preferred_start, preferred_end, preferred_id):
+    _, demo_activities = load_demo()
+    profile = profile_with(
+        budget="20.00",
+        preferences=["architecture", "THRIFT"],
+        trip={"start": "2026-10-24T08:00:00-04:00", "end": "2026-10-24T18:00:00-04:00"},
+    )
+
+    # Both candidates cost $20, so only the higher-ranked one can fit.
+    other_data = demo_activities[0].model_dump()
+    other_data["id"] = "m-other"
+    other_activity = Activity.model_validate(other_data)
+
+    preferred_data = other_activity.model_dump()
+    preferred_data["id"] = preferred_id
+    preferred_data["categories"] = preferred_categories
+    preferred_data["schedule"] = {
+        "start": f"2026-10-24T{preferred_start}:00-04:00",
+        "end": f"2026-10-24T{preferred_end}:00-04:00",
+    }
+    preferred_activity = Activity.model_validate(preferred_data)
+
+    candidates = [other_activity, preferred_activity]
+    plan = build_itinerary(profile, candidates)
+
+    assert plan.activities == (preferred_activity,)
+    assert plan.total_cost == Decimal("20.00")
+    assert candidates == [other_activity, preferred_activity]
+    assert build_itinerary(profile, list(reversed(candidates))) == plan
+
+
+def test_duplicate_category_labels_do_not_increase_priority():
+    _, demo_activities = load_demo()
+    profile = profile_with(budget="20.00", preferences=["architecture"])
+
+    ordinary_data = demo_activities[0].model_dump()
+    ordinary_data["id"] = "a-ordinary"
+    ordinary_activity = Activity.model_validate(ordinary_data)
+
+    repeated_data = ordinary_activity.model_dump()
+    repeated_data["id"] = "z-repeated"
+    repeated_data["categories"] = ["architecture", "ARCHITECTURE", "architecture"]
+    repeated_activity = Activity.model_validate(repeated_data)
+
+    plan = build_itinerary(profile, [repeated_activity, ordinary_activity])
+
+    assert plan.activities == (ordinary_activity,)
+
+
+def test_empty_itinerary_cost_is_decimal_zero():
+    plan = Itinerary(activities=())
+
+    assert plan.total_cost == Decimal("0.00")
+    assert isinstance(plan.total_cost, Decimal)
+
+
+@pytest.mark.parametrize(
     "change, message",
     [
         ({"destination": "Boston"}, "Destination"),

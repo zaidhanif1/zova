@@ -1,6 +1,7 @@
 """Greedy selection with an independent hard-constraint validation boundary."""
 
 from collections.abc import Sequence
+from datetime import datetime
 
 from zova.models import Activity, Itinerary, TimeWindow, TravelerProfile
 
@@ -10,91 +11,134 @@ class PlanViolation(ValueError):
 
 
 def overlaps(left: TimeWindow, right: TimeWindow) -> bool:
-    """Half-open intervals allow one session to start when another ends."""
-    return left.start < right.end and right.start < left.end
+    """Check whether two time windows share any time."""
+    # A session ending exactly when another starts is allowed.
+    if left.end <= right.start:
+        return False
+
+    if right.end <= left.start:
+        return False
+
+    return True
 
 
 def validate_plan(profile: TravelerProfile, plan: Itinerary) -> None:
+    """Raise PlanViolation when a plan breaks a rule; otherwise return normally."""
+    # STEP 1: Check the total estimated cost.
     if plan.total_cost > profile.budget:
         raise PlanViolation("Plan exceeds budget")
-    seen: set[str] = set()
-    ordered = sorted(plan.activities, key=lambda activity: activity.schedule.start)
-    for index, activity in enumerate(ordered):
-        if activity.id in seen:
+
+    # STEP 2: Work through a chronological copy of the activities.
+    def get_start_time(activity: Activity) -> datetime:
+        return activity.schedule.start
+
+    ordered_activities = sorted(plan.activities, key=get_start_time)
+    seen_activity_ids: set[str] = set()
+    previous_activity: Activity | None = None
+
+    for activity in ordered_activities:
+        # STEP 3: Reject repeated activities or a different destination/currency.
+        if activity.id in seen_activity_ids:
             raise PlanViolation("Duplicate activity")
-        seen.add(activity.id)
+        seen_activity_ids.add(activity.id)
+
         if activity.destination != profile.destination or activity.currency != profile.currency:
             raise PlanViolation("Destination or currency mismatch")
+
+        # STEP 4: Keep the session inside the trip's time window.
         if activity.schedule.start < profile.trip.start or activity.schedule.end > profile.trip.end:
             raise PlanViolation("Activity outside trip window")
-        if any(overlaps(activity.schedule, block) for block in profile.unavailable):
-            raise PlanViolation("Activity overlaps unavailable time")
-        if index and overlaps(ordered[index - 1].schedule, activity.schedule):
-            raise PlanViolation("Activities overlap")
+
+        # STEP 5: Protect every unavailable time window.
+        for unavailable_window in profile.unavailable:
+            if overlaps(activity.schedule, unavailable_window):
+                raise PlanViolation("Activity overlaps unavailable time")
+
+        # STEP 6: Compare with the previous session in chronological order.
+        # If an earlier pair overlapped, we would already have raised an error.
+        if previous_activity is not None:
+            if overlaps(previous_activity.schedule, activity.schedule):
+                raise PlanViolation("Activities overlap")
+
+        previous_activity = activity
 
 
 def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) -> Itinerary:
-    """Prefer more matching interests, then earlier sessions, then stable IDs.
+    """Try activities in preference order, keeping only valid additions.
 
-    Skip infeasible additions. This heuristic does not promise an optimal plan.
+    This greedy approach is repeatable, but may not find the best possible plan.
     """
+    # STEP 1: Store the traveler's preferences in lowercase.
+    traveler_preferences: set[str] = set()
 
-    # Convert the traveler's preferences into a set of lowercase strings
-    # so comparisons are case-insensitive.
-    preferences = {value.casefold() for value in profile.preferences}
+    for preference in profile.preferences:
+        traveler_preferences.add(preference.casefold())
 
-    # Rank activities by:
-    # 1. Number of matching preferences (more matches = higher priority)
-    # 2. Earlier start time if preference matches are equal
-    # 3. Activity ID as a deterministic tie-breaker
-    ranked = sorted(
-        activities,
-        key=lambda activity: (
-            -len(preferences & {value.casefold() for value in activity.categories}),
-            activity.schedule.start,
-            activity.id,
-        ),
-    )
+    # STEP 2: Define how we count matching interests.
+    def count_matches(activity: Activity) -> int:
+        # A set counts each matching category once, even if it is repeated.
+        matching_categories: set[str] = set()
 
-    # Initialize an empty itinerary containing zero activities.
-    plan = Itinerary(activities=())
+        for category in activity.categories:
+            category = category.casefold()
 
-    # Consider each activity in order of preference ranking.
-    for activity in ranked:
+            if category in traveler_preferences:
+                matching_categories.add(category)
 
-        # Create a temporary itinerary containing all previously accepted
-        # activities PLUS the new activity we're considering.
-        #
-        # *plan.activities unpacks the existing activities into a new tuple.
-        # We do NOT modify the actual plan yet.
-        proposal = Itinerary(activities=(*plan.activities, activity))
+        return len(matching_categories)
 
+    # STEP 3: Define two simple sorting helpers.
+    def get_start_time(activity: Activity) -> datetime:
+        return activity.schedule.start
+
+    def get_id(activity: Activity) -> str:
+        return activity.id
+
+    # STEP 4: Rank all activities.
+    ranked_activities = list(activities)
+
+    # Python keeps the previous order when sorting values that tie.
+    # Sort the least important rule first and the most important rule last.
+    # Sort by ID first (final tie-breaker).
+    ranked_activities.sort(key=get_id)
+
+    # Then sort by start time (earlier first).
+    ranked_activities.sort(key=get_start_time)
+
+    # Finally, prioritize activities matching more interests.
+    ranked_activities.sort(key=count_matches, reverse=True)
+
+    # STEP 5: Start with an empty list of accepted activities.
+    accepted_activities: list[Activity] = []
+
+    for activity in ranked_activities:
+        # Make a copy of everything we have accepted.
+        candidate_activities = accepted_activities.copy()
+
+        # Try including the new activity.
+        candidate_activities.append(activity)
+
+        # Convert the list into an Itinerary.
+        candidate_plan = Itinerary(activities=tuple(candidate_activities))
+
+        # Check whether this itinerary is allowed.
         try:
-            # Check whether adding this activity violates any constraints
-            # enforced by validate_plan (e.g., overlapping time slots or budget).
-            validate_plan(profile, proposal)
+            validate_plan(profile, candidate_plan)
 
         except PlanViolation:
-            # If the proposal violates a constraint, reject this activity.
-            # 'continue' skips the remaining code in this iteration
-            # and moves to the next activity in ranked.
+            # Invalid activity. Skip it.
             continue
 
-        # If validation succeeded, permanently accept the proposal.
-        # The proposed itinerary becomes our new current itinerary.
-        plan = proposal
+        # Valid activity. Keep it.
+        accepted_activities.append(activity)
 
-    # The activities were originally processed by preference ranking,
-    # so reorder the accepted activities chronologically by start time.
-    # Convert the sorted list back into a tuple.
-    plan = Itinerary(
-        activities=tuple(
-            sorted(plan.activities, key=lambda a: a.schedule.start)
-        )
-    )
+    # STEP 6: Put accepted activities in chronological order.
+    accepted_activities.sort(key=get_start_time)
 
-    # Perform one final validation of the complete itinerary.
-    validate_plan(profile, plan)
+    # Create the final itinerary.
+    final_plan = Itinerary(activities=tuple(accepted_activities))
 
-    # Return the completed itinerary containing all accepted activities.
-    return plan
+    # Make sure the final itinerary is valid.
+    validate_plan(profile, final_plan)
+
+    return final_plan

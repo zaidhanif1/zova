@@ -26,5 +26,5 @@ def main() -> int:
 
     print(f"Estimated total: {plan.total_cost:.2f} / {profile.budget:.2f} {profile.currency}")
     print("Budget covers listed activities only; excludes lodging, transport, taxes, and tips.")
-    
+
     return 0

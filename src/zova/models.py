@@ -8,7 +8,8 @@ from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, model_validato
 
 
 class Model(BaseModel):
-    model_config = ConfigDict(extra="forbid", frozen=True) #frozen = immutability & extra = block unexpected payload attributes
+    # Reject unexpected fields and prevent reassignment after validation.
+    model_config = ConfigDict(extra="forbid", frozen=True)
 
 
 class TimeWindow(Model):
@@ -55,4 +56,10 @@ class Itinerary(Model):
 
     @property
     def total_cost(self) -> Decimal:
-        return sum((activity.cost for activity in self.activities), Decimal("0.00"))
+        # Start with Decimal money so an empty itinerary also costs 0.00.
+        total = Decimal("0.00")
+
+        for activity in self.activities:
+            total = total + activity.cost
+
+        return total
