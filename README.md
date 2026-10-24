@@ -16,6 +16,19 @@ python -m venv .venv
 
 On macOS/Linux use `.venv/bin/python` instead of `.venv/Scripts/python.exe`.
 The installed `zova` console command also runs the same demo.
+Use `--budget` to override the budget for a single run without editing the profile:
+
+```powershell
+python -m zova --budget 30.00
+python -m zova --profile profile.json --activities activities.json --budget 100
+```
+
+All three options are optional. Omitted file paths use packaged demo inputs;
+an omitted budget keeps the loaded profile's budget. Custom JSON files must use
+the same schema as the packaged fixtures. Budget amounts must be finite and
+nonnegative, with at most two decimal places and ten digits before the decimal
+point. Invalid arguments or input files print an error and exit with status 2.
+
 Installation needs package-index access; the installed application and tests
 require no network, API keys, or environment variables.
 
@@ -82,9 +95,8 @@ Empty results are reported explicitly.
 
 Next small tasks:
 
-1. Add fixture-path options and a budget override to the CLI, with error handling.
-2. Add synthetic travel times and enforce transfer buffers with tests.
-3. Explain skipped candidates and which preferences selected stops match.
+1. Add synthetic travel times and enforce transfer buffers with tests.
+2. Explain skipped candidates and which preferences selected stops match.
 
 MVP B (Inbox-to-Itinerary Organizer) and MVP C (Disruption Recovery Copilot)
 remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API, frontend,

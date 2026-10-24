@@ -188,7 +188,7 @@ def test_timezone_offsets_compare_as_instants():
 
 
 def test_cli(capsys):
-    assert main() == 0
+    assert main([]) == 0
     output = capsys.readouterr().out
     assert "SYNTHETIC DATA" in output
     assert "55.00 / 60.00 USD" in output

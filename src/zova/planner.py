@@ -134,8 +134,6 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
     accepted_activities: list[Activity] = []
 
     for activity in ranked_activities:
-
-
         # Make a copy of everything we have accepted.
         candidate_activities = accepted_activities.copy()
 
@@ -144,9 +142,6 @@ def build_itinerary(profile: TravelerProfile, activities: Sequence[Activity]) ->
 
         # Convert the list into an Itinerary.
         candidate_plan = Itinerary(activities=tuple(candidate_activities))
-
-        print(candidate_plan)
-        print("\n")
 
         # Check whether this itinerary is allowed.
         try:

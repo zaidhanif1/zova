@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Optional CLI profile/activity JSON paths and a validated budget override that
+  leaves the source profile unchanged; invalid inputs produce command-line errors.
 - Offline `zova` / `python -m zova` CLI with a fictional traveler and seven synthetic activities.
 - Typed inputs and deterministic interest-based selection with budget, blocked-time,
   activity-overlap, trip-window, destination, and duplicate checks.
@@ -15,6 +17,9 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ### Changed
 - Adopted the official Zova identity and `zova` Python package name.
 - Established the workspace root as the runnable project with setup and test instructions.
+
+### Fixed
+- Label CLI output as synthetic and omit temporary candidate-plan debug output.
 
 ### Documentation
 - Established the three-MVP project blueprint, starter README, and Codex contribution instructions.
