@@ -15,6 +15,7 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--profile", type=Path, help="Path to a traveler profile JSON file.")
     parser.add_argument("--activities", type=Path, help="Path to an activities JSON file.")
     parser.add_argument("--budget", help="Override the profile budget (nonnegative USD amount).")
+    parser.add_argument("--name", help="Override user's name.")
     arguments = parser.parse_args(argv)
 
     try:
@@ -33,6 +34,11 @@ def main(argv: list[str] | None = None) -> int:
         # the text to Decimal and enforces the same money rules as JSON inputs.
         profile_values = profile.model_dump()
         profile_values["budget"] = arguments.budget
+
+    if arguments.name:
+        profile_values = profile.model_dump()
+        profile_values["name"] = arguments.name
+
         try:
             profile = TravelerProfile.model_validate(profile_values)
         except ValidationError:
