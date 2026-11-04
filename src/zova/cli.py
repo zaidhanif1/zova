@@ -29,15 +29,14 @@ def main(argv: list[str] | None = None) -> int:
     except (OSError, UnicodeError, ValidationError) as error:
         parser.error(f"Could not load planner inputs: {error}")
 
-    if arguments.budget is not None:
+    if arguments.budget is not None or arguments.name is not None:
         # Revalidate a new profile because the original is frozen. Pydantic converts
         # the text to Decimal and enforces the same money rules as JSON inputs.
         profile_values = profile.model_dump()
-        profile_values["budget"] = arguments.budget
-
-    if arguments.name:
-        profile_values = profile.model_dump()
-        profile_values["name"] = arguments.name
+        if arguments.budget is not None:
+            profile_values["budget"] = arguments.budget
+        if arguments.name is not None:
+            profile_values["name"] = arguments.name
 
         try:
             profile = TravelerProfile.model_validate(profile_values)

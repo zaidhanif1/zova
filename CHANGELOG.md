@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Local FastAPI health and input-validation endpoints, declared FastAPI/Uvicorn
+  dependencies, API tests, and server setup instructions.
 - Optional CLI profile/activity JSON paths and a validated budget override that
   leaves the source profile unchanged; invalid inputs produce command-line errors.
 - Offline `zova` / `python -m zova` CLI with a fictional traveler and seven synthetic activities.
@@ -19,6 +21,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Established the workspace root as the runnable project with setup and test instructions.
 
 ### Fixed
+- Correct API model imports to use the installed `zova` package; remove input logging.
+- Apply CLI budget overrides even without a name override, and preserve both together.
 - Label CLI output as synthetic and omit temporary candidate-plan debug output.
 
 ### Documentation
