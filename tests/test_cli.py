@@ -54,6 +54,13 @@ def test_budget_override_with_packaged_demo(capsys):
     assert load_demo()[0].budget == Decimal("60.00")
 
 
+def test_name_and_budget_overrides_together(capsys):
+    assert main(["--name", "Synthetic visitor", "--budget", "30"]) == 0
+    output = capsys.readouterr().out
+    assert "fictional traveler: Synthetic visitor" in output
+    assert "Estimated total: 30.00 / 30.00 USD" in output
+
+
 @pytest.mark.parametrize("budget", ["-1", "invalid", "NaN", "inf", "1.001", "10000000000"])
 def test_invalid_budget(budget, capsys):
     with pytest.raises(SystemExit) as error:
