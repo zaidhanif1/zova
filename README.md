@@ -2,7 +2,8 @@
 
 Zova is a learning project for a personalized AI travel assistant. The first
 working slice of **MVP A: Personalized Weekend Planner** is an offline Python CLI
-with deterministic planning. Agents, integrations, and other MVPs are future work.
+with deterministic planning, also exposed through a local FastAPI API.
+Agents, integrations, and other MVPs are future work.
 
 ## Install and run
 
@@ -51,9 +52,31 @@ The installation above includes FastAPI and Uvicorn. On macOS/Linux run:
 On Windows use `.venv/Scripts/python.exe` with the same arguments.
 Open http://127.0.0.1:8000/docs for interactive API documentation, or
 http://127.0.0.1:8000/health for `{"status":"ok"}`.
-`POST /upload` accepts a JSON object with `profile` and `activities`, using the
-packaged fixture schemas. It validates and echoes inputs; nothing is saved or
-booked. Invalid inputs return HTTP 422. This endpoint does not build an itinerary.
+`POST /itinerary` accepts a JSON object with `profile` and `activities`, using
+the packaged fixture schemas, and builds a deterministic itinerary. The response
+contains `message`, the input `profile` (including currency), selected `activities`,
+and `total_cost` as a decimal string such as `"55.00"`. Costs are synthetic estimates.
+No feasible activities returns HTTP 200 with an empty list and `"0.00"` total.
+Invalid inputs return HTTP 422; nothing is saved or booked. This replaces `/upload`.
+
+To try the fixture request while the server is running:
+
+```bash
+.venv/bin/python - <<'PYTHON'
+import httpx
+from zova.fixtures import load_demo
+
+profile, activities = load_demo()
+response = httpx.post("http://127.0.0.1:8000/itinerary", json={
+    "profile": profile.model_dump(mode="json"),
+    "activities": [activity.model_dump(mode="json") for activity in activities],
+})
+response.raise_for_status()
+print(response.json())
+PYTHON
+```
+
+The demo returns four stops and `"55.00"` estimated total in USD.
 Use synthetic data only; the local development API has no authentication.
 
 No `.env` file is needed. The editable installation makes `zova` importable from
@@ -95,7 +118,8 @@ transport, taxes, tips, and purchases outside the listed estimates.
 Tests cover the exact demo, budget rejection, blocked-time and activity
 conflicts, touching boundaries, reduced budgets, empty input, duplicates,
 trip/destination constraints, malformed inputs, timezone offsets, and CLI entry
-paths. No static type checker or CI is configured yet.
+paths. API tests cover itinerary generation, fractional costs, empty/infeasible
+results, and invalid inputs. No static type checker or CI is configured yet.
 
 ## Architecture
 
@@ -105,7 +129,7 @@ paths. No static type checker or CI is configured yet.
   of the current working directory.
 - `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
 - `src/zova/cli.py`: display the resulting itinerary.
-- `src/zova/api.py`: FastAPI health check and input validation/echo endpoint.
+- `src/zova/api.py`: FastAPI health check and itinerary-generation endpoint.
 - `tests/`: offline regression and CLI tests.
 
 Pydantic rejects malformed data. `validate_plan` checks whether well-formed

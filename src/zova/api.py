@@ -1,8 +1,9 @@
-"""Local API for validating synthetic planner inputs; no persistence."""
+"""Local API for generating synthetic itineraries; no persistence."""
 
 from fastapi import FastAPI
 
-from zova.models import Activity, Model, TravelerProfile
+from zova.models import Activity, ItineraryResponse, TravelerProfile
+from zova.planner import build_itinerary
 
 app = FastAPI(title="Zova API")
 
@@ -12,16 +13,12 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
-class UploadResponse(Model):
-    message: str
-    profile: TravelerProfile
-    activities: list[Activity]
-
-
-@app.post("/upload")
-def upload_preferences(profile: TravelerProfile, activities: list[Activity]) -> UploadResponse:
-    return UploadResponse(
-        message="Preferences validated successfully; not stored",
+@app.post("/itinerary")
+def post_itinerary(profile: TravelerProfile, activities: list[Activity]) -> ItineraryResponse:
+    plan = build_itinerary(profile, activities)
+    return ItineraryResponse(
+        message="Successfully generated itinerary tailored to user profile and given activities.",
+        total_cost=plan.total_cost,
         profile=profile,
-        activities=activities,
+        activities=plan.activities,
     )
