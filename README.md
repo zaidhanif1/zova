@@ -1,0 +1,138 @@
+# Zova
+
+Zova is a learning project for a personalized AI travel assistant. The first
+working slice of **MVP A: Personalized Weekend Planner** is an offline Python CLI
+with deterministic planning. Agents, integrations, and other MVPs are future work.
+
+## Install and run
+
+Requires Python 3.12+. From the repository root, in PowerShell:
+
+```powershell
+python -m venv .venv
+.venv/Scripts/python.exe -m pip install -e ".[dev]"
+.venv/Scripts/python.exe -m zova
+```
+
+On macOS/Linux use `.venv/bin/python` instead of `.venv/Scripts/python.exe`.
+For example, from the repository root:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m zova
+```
+
+The installed `zova` console command also runs the same demo.
+Use `--budget` to override the budget for a single run without editing the profile:
+
+```powershell
+python -m zova --budget 30.00
+python -m zova --profile profile.json --activities activities.json --budget 100
+```
+
+All three options are optional. Omitted file paths use packaged demo inputs;
+an omitted budget keeps the loaded profile's budget. Custom JSON files must use
+the same schema as the packaged fixtures. Budget amounts must be finite and
+nonnegative, with at most two decimal places and ten digits before the decimal
+point. Invalid arguments or input files print an error and exit with status 2.
+
+Installation needs package-index access; the installed application and tests
+require no network, API keys, or environment variables.
+
+## Local FastAPI server
+
+The installation above includes FastAPI and Uvicorn. On macOS/Linux run:
+
+```bash
+.venv/bin/python -m uvicorn zova.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+On Windows use `.venv/Scripts/python.exe` with the same arguments.
+Open http://127.0.0.1:8000/docs for interactive API documentation, or
+http://127.0.0.1:8000/health for `{"status":"ok"}`.
+`POST /upload` accepts a JSON object with `profile` and `activities`, using the
+packaged fixture schemas. It validates and echoes inputs; nothing is saved or
+booked. Invalid inputs return HTTP 422. This endpoint does not build an itinerary.
+Use synthetic data only; the local development API has no authentication.
+
+No `.env` file is needed. The editable installation makes `zova` importable from
+`src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
+Keep `--reload` for local development.
+
+## Demo
+
+Packaged JSON contains a fictional traveler in New York City on Saturday,
+October 24, 2026, a $60 USD budget, architecture/thrift/food preferences,
+a 2–4 PM commitment, and seven synthetic activities.
+
+The planner ranks candidates by matching interests, then start time and ID.
+It greedily accepts an addition only if the proposed plan passes validation,
+then returns stops chronologically. It skips candidates exceeding budget,
+overlapping commitments or activities, falling outside the trip, repeating IDs,
+or targeting a different destination/currency.
+
+Expected selected sessions (UTC−04:00):
+
+- 09:00–10:30: Synthetic architecture walk, $20.
+- 11:00–12:00: Synthetic thrift browsing session, $10.
+- 12:00–13:00: Synthetic street food lunch, $15.
+- 16:00–17:00: Synthetic design gallery, $10.
+
+The CLI displays dated timestamps, unavailable windows, and
+`Estimated total: 55.00 / 60.00 USD`. All data is synthetic and costs are estimates.
+No reservation or real availability is implied. Budget excludes lodging,
+transport, taxes, tips, and purchases outside the listed estimates.
+
+## Tests and checks
+
+```powershell
+.venv/Scripts/python.exe -m pytest
+.venv/Scripts/python.exe -m ruff check .
+.venv/Scripts/python.exe -m ruff format --check .
+```
+
+Tests cover the exact demo, budget rejection, blocked-time and activity
+conflicts, touching boundaries, reduced budgets, empty input, duplicates,
+trip/destination constraints, malformed inputs, timezone offsets, and CLI entry
+paths. No static type checker or CI is configured yet.
+
+## Architecture
+
+- `src/zova/models.py`: Pydantic validation, aware time windows, Decimal money,
+  and typed profile/activity/itinerary models.
+- `src/zova/fixtures.py` and `src/zova/data/`: packaged JSON loading independent
+  of the current working directory.
+- `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
+- `src/zova/cli.py`: display the resulting itinerary.
+- `src/zova/api.py`: FastAPI health check and input validation/echo endpoint.
+- `tests/`: offline regression and CLI tests.
+
+Pydantic rejects malformed data. `validate_plan` checks whether well-formed
+activities are feasible together. Keeping these jobs separate lets a future
+agent propose plans while Python still enforces constraints. Decimal avoids
+binary floating-point surprises. Intervals use `[start, end)`: ending at noon
+and starting at noon do not overlap.
+
+## Limits and next steps
+
+Activities have fixed sessions whose duration must match their interval;
+start times are not chosen within opening windows. Greedy selection is repeatable
+but does not find a globally optimal plan. No routing or transfer buffer is
+modeled, so schedule validity does not establish geographic feasibility.
+Empty results are reported explicitly.
+
+Next small tasks:
+
+1. Add synthetic travel times and enforce transfer buffers with tests.
+2. Explain skipped candidates and which preferences selected stops match.
+
+MVP B (Inbox-to-Itinerary Organizer) and MVP C (Disruption Recovery Copilot)
+remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API, frontend,
+storage, or deployment is included.
+
+See [AGENTS.md](AGENTS.md) for ongoing engineering instructions,
+[docs/PROJECT_BLUEPRINT.md](docs/PROJECT_BLUEPRINT.md) for long-term requirements,
+and [CHANGELOG.md](CHANGELOG.md) for implemented changes.
+The `zova_repo_starter` directory preserves starter documents; the root README
+and `docs/` are authoritative for current development.

@@ -218,3 +218,26 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Zova project ignores
+.venv/
+.tmp/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+build/
+dist/
+.env
+.env.*
+!.env.example
+*.db
+*.sqlite*
+*.log
+traces/
+tokens/
+oauth*.json
+.coverage
+htmlcov/
