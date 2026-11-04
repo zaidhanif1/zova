@@ -15,6 +15,14 @@ python -m venv .venv
 ```
 
 On macOS/Linux use `.venv/bin/python` instead of `.venv/Scripts/python.exe`.
+For example, from the repository root:
+
+```bash
+python3 -m venv .venv
+.venv/bin/python -m pip install -e '.[dev]'
+.venv/bin/python -m zova
+```
+
 The installed `zova` console command also runs the same demo.
 Use `--budget` to override the budget for a single run without editing the profile:
 
@@ -31,6 +39,26 @@ point. Invalid arguments or input files print an error and exit with status 2.
 
 Installation needs package-index access; the installed application and tests
 require no network, API keys, or environment variables.
+
+## Local FastAPI server
+
+The installation above includes FastAPI and Uvicorn. On macOS/Linux run:
+
+```bash
+.venv/bin/python -m uvicorn zova.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+On Windows use `.venv/Scripts/python.exe` with the same arguments.
+Open http://127.0.0.1:8000/docs for interactive API documentation, or
+http://127.0.0.1:8000/health for `{"status":"ok"}`.
+`POST /upload` accepts a JSON object with `profile` and `activities`, using the
+packaged fixture schemas. It validates and echoes inputs; nothing is saved or
+booked. Invalid inputs return HTTP 422. This endpoint does not build an itinerary.
+Use synthetic data only; the local development API has no authentication.
+
+No `.env` file is needed. The editable installation makes `zova` importable from
+`src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
+Keep `--reload` for local development.
 
 ## Demo
 
@@ -77,6 +105,7 @@ paths. No static type checker or CI is configured yet.
   of the current working directory.
 - `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
 - `src/zova/cli.py`: display the resulting itinerary.
+- `src/zova/api.py`: FastAPI health check and input validation/echo endpoint.
 - `tests/`: offline regression and CLI tests.
 
 Pydantic rejects malformed data. `validate_plan` checks whether well-formed
