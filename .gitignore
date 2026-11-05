@@ -241,3 +241,7 @@ tokens/
 oauth*.json
 .coverage
 htmlcov/
+
+# Frontend dependencies and build output
+node_modules/
+frontend/dist/

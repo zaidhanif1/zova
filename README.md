@@ -3,6 +3,7 @@
 Zova is a learning project for a personalized AI travel assistant. The first
 working slice of **MVP A: Personalized Weekend Planner** is an offline Python CLI
 with deterministic planning, also exposed through a local FastAPI API.
+A small React browser interface can generate and display plans with an editable budget.
 Agents, integrations, and other MVPs are future work.
 
 ## Install and run
@@ -83,6 +84,50 @@ No `.env` file is needed. The editable installation makes `zova` importable from
 `src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
 Keep `--reload` for local development.
 
+## Browser frontend (React + TypeScript + Vite)
+
+Requires Node.js 22.12+ (or 20.19+) and npm, plus the Python installation above.
+Run the backend from the repository root in one terminal:
+
+```bash
+.venv/bin/python -m uvicorn zova.api:app --reload --host 127.0.0.1 --port 8000
+```
+
+In a second terminal:
+
+```bash
+cd frontend
+npm ci
+npm run dev
+```
+
+Open http://127.0.0.1:5173. Click **Generate Itinerary** for the $60 fixture
+plan (four stops, $55 estimated total). Try $30 for fewer stops, or $0 for an
+empty itinerary. The browser displays loading, validation, and server/network
+errors; starting FastAPI and submitting again retries a failed request.
+
+The page imports the existing synthetic JSON directly from `src/zova/data/`.
+Only the budget is editable. Times display in America/New_York regardless of
+browser timezone; costs are estimates and nothing is saved or booked.
+
+`App.tsx` keeps budget, loading, error, and result state with `useState`.
+The form handler uses `fetch('/itinerary')` to POST JSON; Vite forwards that
+request to port 8000. No backend CORS change is needed. The returned activities
+are rendered with `.map()`, and response money strings are formatted for display.
+TypeScript describes the expected response shape; it does not validate server
+JSON at runtime. Python remains responsible for validation and planning.
+
+Frontend checks (from `frontend/`):
+
+```bash
+npm test
+npm run build
+```
+
+Tests mock fetch and run offline. The build performs TypeScript checks and emits
+`frontend/dist/`. The proxy is for local development only; a production host
+would need its own API routing. No deployment is configured.
+
 ## Demo
 
 Packaged JSON contains a fictional traveler in New York City on Saturday,
@@ -130,6 +175,7 @@ results, and invalid inputs. No static type checker or CI is configured yet.
 - `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
 - `src/zova/cli.py`: display the resulting itinerary.
 - `src/zova/api.py`: FastAPI health check and itinerary-generation endpoint.
+- `frontend/`: React page, plain CSS, Vite development proxy, and UI tests.
 - `tests/`: offline regression and CLI tests.
 
 Pydantic rejects malformed data. `validate_plan` checks whether well-formed
@@ -152,7 +198,7 @@ Next small tasks:
 2. Explain skipped candidates and which preferences selected stops match.
 
 MVP B (Inbox-to-Itinerary Organizer) and MVP C (Disruption Recovery Copilot)
-remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API, frontend,
+remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API,
 storage, or deployment is included.
 
 See [AGENTS.md](AGENTS.md) for ongoing engineering instructions,
