@@ -17,6 +17,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Offline planner, malformed-input, timezone, and CLI tests.
 
 ### Changed
+- Replace the validation-only `/upload` endpoint with `POST /itinerary`, returning
+  selected synthetic activities and an exact estimated total without persistence.
 - Adopted the official Zova identity and `zova` Python package name.
 - Established the workspace root as the runnable project with setup and test instructions.
 

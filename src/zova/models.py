@@ -63,3 +63,13 @@ class Itinerary(Model):
             total = total + activity.cost
 
         return total
+
+
+# API response models.
+
+
+class ItineraryResponse(Model):
+    message: str
+    total_cost: Decimal
+    profile: TravelerProfile
+    activities: list[Activity]
