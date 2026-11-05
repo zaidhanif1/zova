@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Local React/TypeScript/Vite weekend planner interface with editable budget,
+  itinerary times and costs, and loading, error, and empty-result states.
 - Local FastAPI health and input-validation endpoints, declared FastAPI/Uvicorn
   dependencies, API tests, and server setup instructions.
 - Optional CLI profile/activity JSON paths and a validated budget override that
