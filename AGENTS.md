@@ -18,6 +18,8 @@ Zova is an AI travel assistant project. Its product goals and MVP specifications
 
 ## Code quality and boundaries
 
+- Use **Allman brace style for TypeScript and TSX**: opening braces for functions, callbacks, interfaces, and control-flow blocks go on their own lines; put `else`, `catch`, and `finally` on separate lines after the closing brace. Use four-space indentation and blank lines between logical steps, especially in TSX functions. When passing an object argument, put its opening brace on a separate line after the opening parenthesis or preceding comma (split `({` across lines). Keep imports and JSX expressions idiomatic. This is the repository owner's ongoing style preference.
+
 - Prefer **Python**, type hints, Pydantic-validated boundaries, simple functions, and clear module responsibilities.
 - Keep application logic independent of LLM vendor adapters and real provider APIs.
 - Use deterministic code for arithmetic, ranking calculations, hard constraints, authorization, timezones, and state changes.
