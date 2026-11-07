@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Responsive Zova welcome landing page with an original city illustration,
+  demo walkthrough, and direct links to the existing weekend planner.
 - Local React/TypeScript/Vite weekend planner interface with editable budget,
   itinerary times and costs, and loading, error, and empty-result states.
 - Local FastAPI health and input-validation endpoints, declared FastAPI/Uvicorn
