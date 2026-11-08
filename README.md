@@ -101,7 +101,9 @@ npm ci
 npm run dev
 ```
 
-Open http://127.0.0.1:5173. Click **Generate Itinerary** for the $60 fixture
+Open http://127.0.0.1:5173. The welcome page introduces Zova with an original
+city illustration, explains the fixture demo, and links to the planner on the same
+page. Click **Try the planner**, then **Generate Itinerary** for the $60 fixture
 plan (four stops, $55 estimated total). Try $30 for fewer stops, or $0 for an
 empty itinerary. The browser displays loading, validation, and server/network
 errors; starting FastAPI and submitting again retries a failed request.
