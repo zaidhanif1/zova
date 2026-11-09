@@ -40,7 +40,7 @@ nonnegative, with at most two decimal places and ten digits before the decimal
 point. Invalid arguments or input files print an error and exit with status 2.
 
 Installation needs package-index access; the installed application and tests
-require no network, API keys, or environment variables.
+require no network, API keys, or environment variables for the synthetic planner.
 
 ## Local FastAPI server
 
@@ -80,7 +80,12 @@ PYTHON
 The demo returns four stops and `"55.00"` estimated total in USD.
 Use synthetic data only; the local development API has no authentication.
 
-No `.env` file is needed. The editable installation makes `zova` importable from
+For the experimental Ticketmaster endpoint, set `TICKETMASTER_API_KEY` in a
+local `.env` file and launch Uvicorn from that directory. Restart after changing
+`.env`; exported environment variables take precedence. Keep `.env` out of Git.
+The synthetic planner does not need a key.
+
+The editable installation makes `zova` importable from
 `src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
 Keep `--reload` for local development.
 
@@ -200,7 +205,8 @@ Next small tasks:
 2. Explain skipped candidates and which preferences selected stops match.
 
 MVP B (Inbox-to-Itinerary Organizer) and MVP C (Disruption Recovery Copilot)
-remain planned. No LLM, MCP, OAuth, Calendar, Gmail, real travel API,
+remain planned. The experimental Ticketmaster fetch is separate from planning.
+No LLM, MCP, OAuth, Calendar, Gmail,
 storage, or deployment is included.
 
 See [AGENTS.md](AGENTS.md) for ongoing engineering instructions,
