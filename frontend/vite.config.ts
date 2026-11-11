@@ -8,6 +8,10 @@ export default defineConfig(
         port: 5173,
         strictPort: true,
         // The browser calls Vite; Vite forwards this path to FastAPI.
-        proxy: { "/itinerary": "http://127.0.0.1:8000" },
+        proxy:
+        {
+            "/itinerary": "http://127.0.0.1:8000",
+            "/get_events": "http://127.0.0.1:8000",
+        },
     },
 });
