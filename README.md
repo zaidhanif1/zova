@@ -113,6 +113,16 @@ plan (four stops, $55 estimated total). Try $30 for fewer stops, or $0 for an
 empty itinerary. The browser displays loading, validation, and server/network
 errors; starting FastAPI and submitting again retries a failed request.
 
+Use **Find events** in the navigation or scroll below the planner to search
+Ticketmaster by city. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
+and restart FastAPI first. The browser calls `GET /get_events?city=...` through
+the Vite proxy; the key stays on the backend. Results show up to the first five
+events in Ticketmaster's returned order, with no additional relevance scoring.
+Cards show event names, venues, and event-local dates/times where provided;
+missing details are labeled unavailable. Loading, empty-result, and request-error
+states support retry. This live search is separate from the synthetic itinerary:
+it does not check budget or schedule feasibility or add events to a plan.
+
 The page imports the existing synthetic JSON directly from `src/zova/data/`.
 Only the budget is editable. Times display in America/New_York regardless of
 browser timezone; costs are estimates and nothing is saved or booked.
@@ -121,8 +131,10 @@ browser timezone; costs are estimates and nothing is saved or booked.
 The form handler uses `fetch('/itinerary')` to POST JSON; Vite forwards that
 request to port 8000. No backend CORS change is needed. The returned activities
 are rendered with `.map()`, and response money strings are formatted for display.
-TypeScript describes the expected response shape; it does not validate server
-JSON at runtime. Python remains responsible for validation and planning.
+TypeScript describes the expected itinerary response shape; it does not validate
+itinerary JSON at runtime. Event search checks the event-list structure and
+provides fallbacks for missing display fields. Python remains responsible for
+planner validation and planning.
 
 Frontend checks (from `frontend/`):
 
