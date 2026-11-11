@@ -36,6 +36,9 @@ def post_itinerary(profile: TravelerProfile, activities: list[Activity]) -> Itin
 
 
 async def get_ticketmaster_events(city: str) -> dict:
+
+    if not city:
+        raise HTTPException(status_code=400, detail="City parameter is required")
     try:
         events = await fetch_ticketmaster_events(city)
         return events
