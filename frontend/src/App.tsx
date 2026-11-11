@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { FormEvent } from "react";
 import demoProfile from "../../src/zova/data/profile.json";
 import demoActivities from "../../src/zova/data/activities.json";
+import EventSearch from "./EventSearch";
 
 interface TimeWindow
 {
@@ -146,6 +147,7 @@ export default function App()
                 </a>
                 <nav className="header-nav" aria-label="Main navigation">
                     <a href="#how-it-works">How it works</a>
+                    <a href="#events">Find events</a>
                     <a className="nav-cta" href="#planner">Try the demo <span aria-hidden="true">↗</span></a>
                 </nav>
             </header>
@@ -370,6 +372,7 @@ export default function App()
                         )}
                     </section>
                 </div>
+                <EventSearch />
             </main>
             <footer>
                 Thoughtfully planned. Open to possibility.
