@@ -127,7 +127,9 @@ The page imports the existing synthetic JSON directly from `src/zova/data/`.
 Only the budget is editable. Times display in America/New_York regardless of
 browser timezone; costs are estimates and nothing is saved or booked.
 
-`App.tsx` keeps budget, loading, error, and result state with `useState`.
+`src/components/App/App.tsx` composes the page layout, weekend planner, and event search.
+`src/components/WeekendPlanner/WeekendPlanner.tsx` owns the budget form, results,
+and budget, loading, error, and result state with `useState`.
 The form handler uses `fetch('/itinerary')` to POST JSON; Vite forwards that
 request to port 8000. No backend CORS change is needed. The returned activities
 are rendered with `.map()`, and response money strings are formatted for display.
@@ -135,6 +137,28 @@ TypeScript describes the expected itinerary response shape; it does not validate
 itinerary JSON at runtime. Event search checks the event-list structure and
 provides fallbacks for missing display fields. Python remains responsible for
 planner validation and planning.
+
+Frontend source layout (inside `frontend/`):
+
+```text
+src/
+  components/
+    App/
+      App.tsx
+    EventSearch/
+      EventSearch.tsx
+    WeekendPlanner/
+      WeekendPlanner.tsx
+  test/
+    App.test.tsx
+    EventSearch.test.tsx
+    WeekendPlanner.test.tsx
+  main.tsx
+  styles.css
+```
+
+Each component has its own named folder under `src/components/`; UI tests live
+separately in `src/test/`. `main.tsx` mounts the app and imports the shared styles.
 
 Frontend checks (from `frontend/`):
 
