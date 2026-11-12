@@ -7,6 +7,7 @@ import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
 
+from zova.clients.ticketmaster import fetch_ticketmaster_events
 from zova.models import Activity, ItineraryResponse, TravelerProfile
 from zova.planner import build_itinerary
 
@@ -14,9 +15,6 @@ from zova.planner import build_itinerary
 load_dotenv(dotenv_path=Path.cwd() / ".env", override=False)
 
 app = FastAPI(title="Zova API")
-
-
-TICKETMASTER_URL = "https://app.ticketmaster.com/discovery/v2/events.json"
 
 
 @app.get("/health")
@@ -35,31 +33,19 @@ def post_itinerary(profile: TravelerProfile, activities: list[Activity]) -> Itin
     )
 
 
+@app.get("/get_events")
 async def get_ticketmaster_events(city: str) -> dict:
-
+    city = city.strip()
     if not city:
         raise HTTPException(status_code=400, detail="City parameter is required")
-    try:
-        events = await fetch_ticketmaster_events(city)
-        return events
 
-    except httpx.HTTPError:
-        raise HTTPException(status_code=502, detail="Failed to fetch Ticketmaster events")
-
-
-@app.get("/get_events")
-async def fetch_ticketmaster_events(city: str) -> dict:
     api_key = os.environ.get("TICKETMASTER_API_KEY", "").strip()
-    
     if not api_key:
         raise HTTPException(status_code=503, detail="Ticketmaster API key is not configured")
 
-    params = {"apikey": api_key, "city": city, "size": 20}
-
-    async with httpx.AsyncClient(timeout=10.0) as client:
-        response = await client.get(TICKETMASTER_URL, params=params)
-
-        # Raise for unsuccessful HTTP status codes (4xx or 5xx).
-        response.raise_for_status()
-
-        return response.json()  # parses the json response into a python object (dict)
+    try:
+        return await fetch_ticketmaster_events(city, api_key=api_key)
+    except httpx.HTTPError:
+        raise HTTPException(status_code=502, detail="Failed to fetch Ticketmaster events") from None
+    except ValueError:
+        raise HTTPException(status_code=502, detail="Invalid Ticketmaster response") from None

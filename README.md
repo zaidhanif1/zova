@@ -83,7 +83,9 @@ Use synthetic data only; the local development API has no authentication.
 For the experimental Ticketmaster endpoint, set `TICKETMASTER_API_KEY` in a
 local `.env` file and launch Uvicorn from that directory. Restart after changing
 `.env`; exported environment variables take precedence. Keep `.env` out of Git.
-The synthetic planner does not need a key.
+The synthetic planner does not need a key. `GET /get_events?city=Boston`
+returns provider JSON. Blank cities return 400, missing keys return 503, and
+provider request failures or invalid JSON objects return 502.
 
 The editable installation makes `zova` importable from
 `src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
@@ -217,7 +219,8 @@ results, and invalid inputs. No static type checker or CI is configured yet.
   of the current working directory.
 - `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
 - `src/zova/cli.py`: display the resulting itinerary.
-- `src/zova/api.py`: FastAPI health check and itinerary-generation endpoint.
+- `src/zova/api.py`: FastAPI routes, input checks, and HTTP error responses.
+- `src/zova/clients/ticketmaster.py`: external event requests without FastAPI dependencies.
 - `frontend/`: React page, plain CSS, Vite development proxy, and UI tests.
 - `tests/`: offline regression and CLI tests.
 
