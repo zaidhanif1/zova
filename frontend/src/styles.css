@@ -321,6 +321,7 @@ h3 {
 .activity-details {
   flex: 1;
   min-width: 0;
+  overflow-wrap: anywhere;
 }
 .activity-time {
   font-size: 10px;
@@ -447,10 +448,14 @@ html {
 }
 .header-nav {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 30px;
   margin-left: auto;
   font-size: 12px;
+}
+.event-search {
+  border-top: 1px solid #dce2d7;
 }
 .header-nav a,
 .text-link {

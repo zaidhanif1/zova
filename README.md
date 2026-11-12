@@ -83,7 +83,9 @@ Use synthetic data only; the local development API has no authentication.
 For the experimental Ticketmaster endpoint, set `TICKETMASTER_API_KEY` in a
 local `.env` file and launch Uvicorn from that directory. Restart after changing
 `.env`; exported environment variables take precedence. Keep `.env` out of Git.
-The synthetic planner does not need a key.
+The synthetic planner does not need a key. `GET /get_events?city=Boston`
+returns provider JSON. Blank cities return 400, missing keys return 503, and
+provider request failures or invalid JSON objects return 502.
 
 The editable installation makes `zova` importable from
 `src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
@@ -113,16 +115,52 @@ plan (four stops, $55 estimated total). Try $30 for fewer stops, or $0 for an
 empty itinerary. The browser displays loading, validation, and server/network
 errors; starting FastAPI and submitting again retries a failed request.
 
+Use **Find events** in the navigation or scroll below the planner to search
+Ticketmaster by city. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
+and restart FastAPI first. The browser calls `GET /get_events?city=...` through
+the Vite proxy; the key stays on the backend. Results show up to the first five
+events in Ticketmaster's returned order, with no additional relevance scoring.
+Cards show event names, venues, and event-local dates/times where provided;
+missing details are labeled unavailable. Loading, empty-result, and request-error
+states support retry. This live search is separate from the synthetic itinerary:
+it does not check budget or schedule feasibility or add events to a plan.
+
 The page imports the existing synthetic JSON directly from `src/zova/data/`.
 Only the budget is editable. Times display in America/New_York regardless of
 browser timezone; costs are estimates and nothing is saved or booked.
 
-`App.tsx` keeps budget, loading, error, and result state with `useState`.
+`src/components/App/App.tsx` composes the page layout, weekend planner, and event search.
+`src/components/WeekendPlanner/WeekendPlanner.tsx` owns the budget form, results,
+and budget, loading, error, and result state with `useState`.
 The form handler uses `fetch('/itinerary')` to POST JSON; Vite forwards that
 request to port 8000. No backend CORS change is needed. The returned activities
 are rendered with `.map()`, and response money strings are formatted for display.
-TypeScript describes the expected response shape; it does not validate server
-JSON at runtime. Python remains responsible for validation and planning.
+TypeScript describes the expected itinerary response shape; it does not validate
+itinerary JSON at runtime. Event search checks the event-list structure and
+provides fallbacks for missing display fields. Python remains responsible for
+planner validation and planning.
+
+Frontend source layout (inside `frontend/`):
+
+```text
+src/
+  components/
+    App/
+      App.tsx
+    EventSearch/
+      EventSearch.tsx
+    WeekendPlanner/
+      WeekendPlanner.tsx
+  test/
+    App.test.tsx
+    EventSearch.test.tsx
+    WeekendPlanner.test.tsx
+  main.tsx
+  styles.css
+```
+
+Each component has its own named folder under `src/components/`; UI tests live
+separately in `src/test/`. `main.tsx` mounts the app and imports the shared styles.
 
 Frontend checks (from `frontend/`):
 
@@ -181,7 +219,8 @@ results, and invalid inputs. No static type checker or CI is configured yet.
   of the current working directory.
 - `src/zova/planner.py`: `overlaps`, `validate_plan`, and `build_itinerary`.
 - `src/zova/cli.py`: display the resulting itinerary.
-- `src/zova/api.py`: FastAPI health check and itinerary-generation endpoint.
+- `src/zova/api.py`: FastAPI routes, input checks, and HTTP error responses.
+- `src/zova/clients/ticketmaster.py`: external event requests without FastAPI dependencies.
 - `frontend/`: React page, plain CSS, Vite development proxy, and UI tests.
 - `tests/`: offline regression and CLI tests.
 

@@ -7,9 +7,9 @@ import {
     screen,
     waitFor,
 } from "@testing-library/react";
-import App from "./App";
-import profile from "../../src/zova/data/profile.json";
-import activities from "../../src/zova/data/activities.json";
+import WeekendPlanner from "../components/WeekendPlanner/WeekendPlanner";
+import profile from "../../../src/zova/data/profile.json";
+import activities from "../../../src/zova/data/activities.json";
 
 afterEach(() =>
 {
@@ -51,7 +51,7 @@ test("submits fixture data with the edited budget and displays the response", as
         message: "Generated",
     });
 
-    render(<App />);
+    render(<WeekendPlanner />);
 
     fireEvent.change(screen.getByLabelText(/Your activity budget/),
     {
@@ -102,7 +102,7 @@ test("shows loading, prevents duplicate submissions, and explains an empty plan"
         ),
     );
 
-    render(<App />);
+    render(<WeekendPlanner />);
 
     fireEvent.click(screen.getByRole("button",
     {
@@ -143,7 +143,7 @@ test.each([422, 500])("handles HTTP %s and allows retry", async (status) =>
         detail: "error",
     });
 
-    render(<App />);
+    render(<WeekendPlanner />);
 
     fireEvent.click(screen.getByRole("button",
     {
@@ -172,7 +172,7 @@ test("explains network failures", async () =>
         vi.fn().mockRejectedValue(new TypeError("Failed to fetch")),
     );
 
-    render(<App />);
+    render(<WeekendPlanner />);
 
     fireEvent.click(screen.getByRole("button",
     {
@@ -180,33 +180,4 @@ test("explains network failures", async () =>
     }));
 
     expect(await screen.findByText(/Make sure FastAPI is running/)).toBeTruthy();
-});
-
-test("welcomes visitors and links to the clearly labeled local demo without fetching", () =>
-{
-    const fetchMock = vi.fn();
-
-    vi.stubGlobal("fetch", fetchMock);
-    render(<App />);
-
-    expect(screen.getByRole("heading",
-    {
-        level: 1,
-    }).textContent).toContain("Your weekend.");
-
-    for (const name of [/Try the planner/, /Try the demo/, /How it works/, /Take a look around/])
-    {
-        const link = screen.getByRole("link",
-        {
-            name,
-        });
-        const target = link.getAttribute("href");
-
-        expect(target?.startsWith("#")).toBe(true);
-        expect(document.getElementById(target!.slice(1))).toBeTruthy();
-    }
-
-    expect(screen.getByText(/Only the budget is editable/)).toBeTruthy();
-    expect(screen.getByText("Fixed demo commitment")).toBeTruthy();
-    expect(fetchMock).not.toHaveBeenCalled();
 });

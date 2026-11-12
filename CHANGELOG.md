@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Frontend Ticketmaster city search showing the first five returned events in
+  provider order, with event details, loading, empty, and retryable error states.
 - Responsive Zova welcome landing page with an original city illustration,
   demo walkthrough, and direct links to the existing weekend planner.
 - Local React/TypeScript/Vite weekend planner interface with editable budget,
@@ -27,6 +29,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Established the workspace root as the runnable project with setup and test instructions.
 
 ### Fixed
+- Wire event search to an independent Ticketmaster client; return controlled errors
+  for blank cities, provider request failures, and invalid provider JSON.
 - Correct API model imports to use the installed `zova` package; remove input logging.
 - Apply CLI budget overrides even without a name override, and preserve both together.
 - Label CLI output as synthetic and omit temporary candidate-plan debug output.
