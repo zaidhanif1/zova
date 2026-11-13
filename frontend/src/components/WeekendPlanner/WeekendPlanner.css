@@ -1,0 +1,158 @@
+.preference-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 23px 0;
+}
+
+.preference-tags span {
+  padding: 5px 10px;
+  border: 1px solid #e1e6da;
+  border-radius: 20px;
+  color: #60705d;
+  font-size: 11px;
+  text-transform: capitalize;
+}
+
+.commitment {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 0 23px;
+  margin-bottom: 23px;
+  border-bottom: 1px solid #e7eade;
+}
+
+.commitment > span {
+  font-size: 25px;
+  color: #87977d;
+}
+
+.commitment strong {
+  font-size: 11px;
+  font-weight: 600;
+}
+
+.commitment p {
+  margin: 3px 0 0;
+  color: #687469;
+  font-size: 11px;
+}
+
+.stop-count {
+  font-size: 11px;
+  background: #e9eee3;
+  border-radius: 20px;
+  padding: 5px 12px;
+  white-space: nowrap;
+}
+
+.empty-state {
+  min-height: 352px;
+  border: 1px dashed #ccd6c5;
+  border-radius: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  padding: 28px;
+  background: #f0f3e9;
+}
+
+.compass {
+  display: inline-flex;
+  justify-content: center;
+  align-items: center;
+  width: 67px;
+  height: 67px;
+  border: 1px solid #d3ddca;
+  border-radius: 50%;
+  color: #819576;
+  font-size: 37px;
+  margin-bottom: 23px;
+}
+
+.empty-state h3 {
+  font-family: Georgia, serif;
+  font-size: 23px;
+  font-weight: 400;
+}
+
+.empty-state p {
+  font-size: 12px;
+  color: #6c7968;
+  line-height: 1.9;
+}
+
+.small-note {
+  font-size: 10px;
+  color: #788470;
+  margin-top: 16px;
+}
+
+.activity-time {
+  font-size: 10px;
+  color: #647c60;
+  margin: 0 0 7px;
+  font-weight: 600;
+}
+
+.activity-cost {
+  font-size: 14px;
+  white-space: nowrap;
+}
+
+.total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+  border-top: 1px solid #dce2d7;
+  padding: 20px 0 8px;
+  margin-top: 24px;
+}
+
+.total p {
+  font-size: 13px;
+  margin: 0 0 4px;
+}
+
+.total span {
+  font-size: 11px;
+  color: #687469;
+}
+
+.total > strong {
+  font-family: Georgia, serif;
+  font-size: 32px;
+  font-weight: 400;
+}
+
+.spinning {
+  animation: spin 5s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .spinning {
+    animation: none;
+  }
+}
+
+@media (max-width: 850px) {
+  .activity-cost {
+    margin-left: auto;
+  }
+}
+
+@media (max-width: 650px) {
+  .empty-state {
+    min-height: 290px;
+  }
+}

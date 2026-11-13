@@ -34,7 +34,7 @@ def post_itinerary(profile: TravelerProfile, activities: list[Activity]) -> Itin
 
 
 @app.get("/get_events")
-async def get_ticketmaster_events(city: str) -> dict:
+async def get_ticketmaster_events(city: str, keyword: str | None = None) -> dict:
     city = city.strip()
     if not city:
         raise HTTPException(status_code=400, detail="City parameter is required")
@@ -44,7 +44,7 @@ async def get_ticketmaster_events(city: str) -> dict:
         raise HTTPException(status_code=503, detail="Ticketmaster API key is not configured")
 
     try:
-        return await fetch_ticketmaster_events(city, api_key=api_key)
+        return await fetch_ticketmaster_events(city, api_key=api_key, keyword=keyword)
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Failed to fetch Ticketmaster events") from None
     except ValueError:

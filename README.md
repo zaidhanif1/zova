@@ -116,7 +116,8 @@ empty itinerary. The browser displays loading, validation, and server/network
 errors; starting FastAPI and submitting again retries a failed request.
 
 Use **Find events** in the navigation or scroll below the planner to search
-Ticketmaster by city. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
+Ticketmaster by city, with an optional keyword to narrow the results. Blank
+keywords are omitted from provider requests. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
 and restart FastAPI first. The browser calls `GET /get_events?city=...` through
 the Vite proxy; the key stays on the backend. Results show up to the first five
 events in Ticketmaster's returned order, with no additional relevance scoring.
@@ -147,10 +148,15 @@ src/
   components/
     App/
       App.tsx
+      App.css
     EventSearch/
       EventSearch.tsx
+      EventSearch.css
     WeekendPlanner/
       WeekendPlanner.tsx
+      WeekendPlanner.css
+    shared/
+      PlannerShared.css
   test/
     App.test.tsx
     EventSearch.test.tsx
@@ -160,7 +166,10 @@ src/
 ```
 
 Each component has its own named folder under `src/components/`; UI tests live
-separately in `src/test/`. `main.tsx` mounts the app and imports the shared styles.
+separately in `src/test/`. Each component imports its matching CSS file.
+`WeekendPlanner` and `EventSearch` also import `shared/PlannerShared.css` for
+common forms, layouts, and result cards. `main.tsx` mounts the app and imports
+the small global `styles.css` for typography, browser defaults, and shared text styles.
 
 Frontend checks (from `frontend/`):
 

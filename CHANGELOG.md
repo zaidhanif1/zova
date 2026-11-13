@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Optional keyword filter for Ticketmaster city search, with labeled inputs and
+  blank keywords omitted from provider requests.
 - Frontend Ticketmaster city search showing the first five returned events in
   provider order, with event details, loading, empty, and retryable error states.
 - Responsive Zova welcome landing page with an original city illustration,

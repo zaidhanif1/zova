@@ -1,3 +1,4 @@
+import "./App.css";
 import EventSearch from "../EventSearch/EventSearch";
 import WeekendPlanner from "../WeekendPlanner/WeekendPlanner";
 

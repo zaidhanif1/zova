@@ -135,3 +135,24 @@ test("clears old results and disables submission while searching", async () =>
     finish(response({}));
     await screen.findByText(/No events found/);
 });
+
+
+test.each([
+    ["  jazz & blues  ", "/get_events?city=Boston&keyword=jazz+%26+blues"],
+    ["   ", "/get_events?city=Boston"],
+])("handles optional keyword %j", async (keyword, expectedUrl) =>
+{
+    const fetchMock = vi.fn().mockResolvedValue(response({}));
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EventSearch />);
+
+    fireEvent.change(screen.getByLabelText("Keyword (optional)"),
+    {
+        target: { value: keyword },
+    });
+    submitCity("Boston");
+
+    await screen.findByText(/No events found/);
+    expect(fetchMock).toHaveBeenCalledWith(expectedUrl);
+});

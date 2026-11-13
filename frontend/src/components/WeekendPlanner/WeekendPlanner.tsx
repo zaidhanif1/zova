@@ -1,3 +1,7 @@
+// @ts-ignore CSS is loaded by the bundler and has no TypeScript declarations.
+import "../shared/PlannerShared.css";
+// @ts-ignore CSS is loaded by the bundler and has no TypeScript declarations.
+import "./WeekendPlanner.css";
 import { useState } from "react";
 import type { FormEvent } from "react";
 import demoProfile from "../../../../src/zova/data/profile.json";

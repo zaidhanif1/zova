@@ -1,0 +1,13 @@
+.event-search {
+  border-top: 1px solid #dce2d7;
+}
+
+.event-input,
+.keyword-input {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccd6c7;
+  border-radius: 8px;
+  padding: 10px 14px;
+  gap: 10px;
+}

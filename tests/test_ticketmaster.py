@@ -58,7 +58,7 @@ def test_route_calls_client(monkeypatch):
         response = get_events({"city": " Boston "})
         assert response.status_code == 200
         assert response.json() == payload
-        fetch.assert_awaited_once_with("Boston", api_key="fixture-key")
+        fetch.assert_awaited_once_with("Boston", api_key="fixture-key", keyword=None)
 
 
 @pytest.mark.parametrize(
@@ -86,3 +86,25 @@ def test_route_maps_provider_failures(monkeypatch, error):
         response = get_events({"city": "Boston"})
         assert response.status_code == 502
         assert "fixture-key" not in response.text
+
+
+@pytest.mark.parametrize("keyword", [None, "", "   ", "  jazz & blues  "])
+def test_client_optional_keyword(keyword):
+    response = httpx.Response(200, json={}, request=httpx.Request("GET", TICKETMASTER_URL))
+    with patch("zova.clients.ticketmaster.httpx.AsyncClient") as factory:
+        client = factory.return_value.__aenter__.return_value
+        client.get = AsyncMock(return_value=response)
+        asyncio.run(fetch_ticketmaster_events("Boston", api_key="fixture-key", keyword=keyword))
+        params = {"apikey": "fixture-key", "city": "Boston", "size": 20}
+        if keyword and keyword.strip():
+            params["keyword"] = "jazz & blues"
+        client.get.assert_awaited_once_with(TICKETMASTER_URL, params=params)
+
+
+def test_route_forwards_keyword(monkeypatch):
+    monkeypatch.setenv("TICKETMASTER_API_KEY", "fixture-key")
+    with patch("zova.api.fetch_ticketmaster_events", new_callable=AsyncMock) as fetch:
+        fetch.return_value = {}
+        response = get_events({"city": "Boston", "keyword": "jazz & blues"})
+        assert response.status_code == 200
+        fetch.assert_awaited_once_with("Boston", api_key="fixture-key", keyword="jazz & blues")

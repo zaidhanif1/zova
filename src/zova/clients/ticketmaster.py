@@ -5,9 +5,12 @@ import httpx
 TICKETMASTER_URL = "https://app.ticketmaster.com/discovery/v2/events.json"
 
 
-async def fetch_ticketmaster_events(city: str, *, api_key: str) -> dict:
+async def fetch_ticketmaster_events(city: str, *, api_key: str, keyword: str | None = None) -> dict:
     """Return a provider JSON object; propagate request and decoding failures."""
     params = {"apikey": api_key, "city": city, "size": 20}
+    keyword = (keyword or "").strip()
+    if keyword:
+        params["keyword"] = keyword
 
     async with httpx.AsyncClient(timeout=10.0) as client:
         response = await client.get(TICKETMASTER_URL, params=params)
