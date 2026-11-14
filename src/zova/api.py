@@ -44,7 +44,14 @@ async def get_ticketmaster_events(city: str, keyword: str | None = None) -> dict
         raise HTTPException(status_code=503, detail="Ticketmaster API key is not configured")
 
     try:
-        return await fetch_ticketmaster_events(city, api_key=api_key, keyword=keyword)
+        results = await fetch_ticketmaster_events(city, api_key=api_key, keyword=keyword)
+
+        # Local development diagnostic: inspect the first provider event.
+        events = results.get("_embedded", {}).get("events", [])
+        first_event = events[:1]
+
+        print(first_event)
+        return results
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Failed to fetch Ticketmaster events") from None
     except ValueError:
