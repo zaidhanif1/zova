@@ -4,6 +4,7 @@ import "../shared/PlannerShared.css";
 
 import "./EventSearch.css";
 import { useState } from "react";
+import DatePicker from "../DatePicker/DatePicker";
 import type { FormEvent } from "react";
 
 interface TicketmasterEvent
@@ -77,6 +78,12 @@ export default function EventSearch()
     const [city, setCity] = useState("");
     const [submittedCity, setSubmittedCity] = useState("");
     const [events, setEvents] = useState<TicketmasterEvent[] | null>(null);
+
+
+    const [startDate, setStartDate] = useState("");
+
+    const [endDate, setEndDate] = useState("");
+
     const [keyword, setKeyword] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
@@ -103,6 +110,7 @@ export default function EventSearch()
         }
 
 
+
         setSubmittedCity(queryCity);
         setIsLoading(true);
 
@@ -113,10 +121,21 @@ export default function EventSearch()
                 city: queryCity,
             });
 
-            if (queryKeyword)
+            const optionalParams =
             {
-                searchParams.set("keyword", queryKeyword);
-            }
+                keyword: queryKeyword,
+                start_date: startDate,
+                end_date: endDate,
+            };
+
+            Object.entries(optionalParams).forEach(([key, value]) =>
+            {
+                if (value)
+                {
+                    searchParams.set(key, value);
+                }
+            });
+
 
             const response = await fetch(`/get_events?${searchParams}`);
 
@@ -210,6 +229,25 @@ export default function EventSearch()
                     </div>
 
                     <p className="input-help">Narrow your search, or leave blank for all events.</p>
+
+                    <fieldset className="date-range" aria-describedby="event-date-help">
+                        <legend>Event dates <span>(optional)</span></legend>
+
+                        <DatePicker
+                            startDate={startDate}
+                            endDate={endDate}
+                            disabled={isLoading}
+                            onChange={(start, end) =>
+                            {
+                                setStartDate(start);
+                                setEndDate(end);
+                            }}
+                        />
+
+                        <p className="input-help" id="event-date-help">
+                            Choose a date range, or leave blank for all dates.
+                        </p>
+                    </fieldset>
 
                     <button type="submit" disabled={isLoading}>
                         {isLoading ? "Searching events…" : "Find events"}

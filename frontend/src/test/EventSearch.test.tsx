@@ -128,7 +128,7 @@ test("clears old results and disables submission while searching", async () =>
     await screen.findByText("Old event");
     submitCity("Boston");
     expect(screen.queryByText("Old event")).toBeNull();
-    expect((screen.getByRole("button") as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole("button", { name: "Searching events…" }) as HTMLButtonElement).disabled).toBe(true);
     expect(screen.getByRole("status")).toBeTruthy();
     fireEvent.submit(screen.getByLabelText("City").closest("form")!);
     expect(fetchMock).toHaveBeenCalledTimes(2);
@@ -155,4 +155,45 @@ test.each([
 
     await screen.findByText(/No events found/);
     expect(fetchMock).toHaveBeenCalledWith(expectedUrl);
+});
+
+test("selects, applies, and clears a date range", async () =>
+{
+    const fetchMock = vi.fn().mockImplementation(() => Promise.resolve(response({})));
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EventSearch />);
+    expect(screen.getByText("Any dates")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Change dates" }));
+    const dialog = await screen.findByRole("dialog", { name: "Event dates" });
+    const days = dialog.querySelectorAll<HTMLButtonElement>(".rdp-day:not(.rdp-outside) .rdp-day_button");
+    const start = days[9].closest("[data-day]")!.getAttribute("data-day");
+    const end = days[14].closest("[data-day]")!.getAttribute("data-day");
+    fireEvent.click(days[9]);
+    fireEvent.click(days[14]);
+    expect(screen.getByText("Any dates")).toBeTruthy();
+    fireEvent.click(screen.getByRole("button", { name: "Apply dates" }));
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.queryByText("Any dates")).toBeNull();
+    submitCity("Boston");
+    await screen.findByText(/No events found/);
+    expect(fetchMock).toHaveBeenLastCalledWith(`/get_events?city=Boston&start_date=${start}&end_date=${end}`);
+
+    fireEvent.click(screen.getByRole("button", { name: "Change dates" }));
+    fireEvent.click(await screen.findByRole("button", { name: "Clear dates" }));
+    expect(screen.getByText("Any dates")).toBeTruthy();
+    submitCity("Boston");
+    await screen.findByText(/No events found/);
+    expect(fetchMock).toHaveBeenLastCalledWith("/get_events?city=Boston");
+});
+
+test("Escape discards a draft date selection", async () =>
+{
+    render(<EventSearch />);
+    fireEvent.click(screen.getByRole("button", { name: "Change dates" }));
+    const dialog = await screen.findByRole("dialog", { name: "Event dates" });
+    fireEvent.click(dialog.querySelector<HTMLButtonElement>(".rdp-day_button")!);
+    fireEvent.keyDown(dialog, { key: "Escape" });
+    expect(screen.queryByRole("dialog")).toBeNull();
+    expect(screen.getByText("Any dates")).toBeTruthy();
 });

@@ -117,7 +117,12 @@ errors; starting FastAPI and submitting again retries a failed request.
 
 Use **Find events** in the navigation or scroll below the planner to search
 Ticketmaster by city, with an optional keyword to narrow the results. Blank
-keywords are omitted from provider requests. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
+keywords are omitted from provider requests. Optional event dates use one shadcn/ui-style range calendar
+(Radix Popover and React DayPicker). **Change dates** opens the calendar;
+**Apply dates** confirms the selection and **Clear dates** removes it.
+The form displays a compact date-range summary. Date parameters are sent by the
+frontend but are not yet forwarded to Ticketmaster by the backend; they do not
+currently filter live results. Configure `TICKETMASTER_API_KEY` in the backend's `.env`
 and restart FastAPI first. The browser calls `GET /get_events?city=...` through
 the Vite proxy; the key stays on the backend. Results show up to the first five
 events in Ticketmaster's returned order, with no additional relevance scoring.

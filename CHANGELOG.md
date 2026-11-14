@@ -31,6 +31,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Established the workspace root as the runnable project with setup and test instructions.
 
 ### Fixed
+- Replace native event date inputs with one shadcn/ui-style range calendar,
+  a compact date summary, and Change dates, Apply dates, and Clear dates actions.
 - Wire event search to an independent Ticketmaster client; return controlled errors
   for blank cities, provider request failures, and invalid provider JSON.
 - Correct API model imports to use the installed `zova` package; remove input logging.

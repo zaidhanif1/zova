@@ -1,13 +1,44 @@
-.event-search {
+.event-search
+{
   border-top: 1px solid #dce2d7;
 }
 
 .event-input,
-.keyword-input {
+.keyword-input
+{
   display: flex;
   align-items: center;
   border: 1px solid #ccd6c7;
   border-radius: 8px;
   padding: 10px 14px;
   gap: 10px;
+}
+
+.date-range
+{
+    min-width: 0;
+    margin: 0 0 24px;
+    padding: 0;
+    border: 0;
+}
+
+.date-range legend
+{
+    margin-bottom: 12px;
+    padding: 0;
+    color: #263e35;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.date-range legend span
+{
+    color: #7b8679;
+    font-weight: 400;
+}
+
+.date-range .input-help
+{
+    margin: 10px 0 0;
+    line-height: 1.6;
 }

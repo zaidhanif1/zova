@@ -1,0 +1,133 @@
+.date-picker-trigger
+{
+    justify-content: flex-start;
+    gap: 8px;
+    min-height: 46px;
+    padding: 10px;
+    border: 1px solid #ccd6c7;
+    background: #f7f9f3;
+    color: #263e35;
+    font-size: 12px;
+    font-weight: 400;
+    text-align: left;
+}
+
+.date-picker-trigger svg
+{
+    flex-shrink: 0;
+}
+
+.date-picker-trigger:hover:not(:disabled)
+{
+    background: #eef2e7;
+    border-color: #788b71;
+}
+
+.date-picker-popover
+{
+    z-index: 50;
+    max-width: calc(100vw - 24px);
+    padding: 16px;
+    border: 1px solid #dce2d7;
+    border-radius: 14px;
+    background: white;
+    color: #263e35;
+    box-shadow: 0 12px 40px #253d3526;
+}
+
+.date-picker-popover .rdp-root
+{
+    --rdp-accent-color: #194f40;
+    --rdp-accent-background-color: #eef2e7;
+    --rdp-day-height: 36px;
+    --rdp-day-width: 36px;
+    --rdp-day_button-height: 34px;
+    --rdp-day_button-width: 34px;
+    font-size: 13px;
+}
+
+.date-picker-popover .rdp-root button
+{
+    display: inline-flex;
+    justify-content: center;
+    padding: 0;
+    background: transparent;
+    color: inherit;
+    font-size: inherit;
+    font-weight: 400;
+}
+
+.date-picker-popover .rdp-root button:hover:not(:disabled)
+{
+    background: #eef2e7;
+}
+
+.date-picker-popover .rdp-selected .rdp-day_button
+{
+    background: #194f40;
+    color: white;
+}
+
+.date-picker-popover .rdp-selected .rdp-day_button:hover
+{
+    background: #286953;
+}
+
+.date-picker-summary
+{
+    padding: 14px;
+    border: 1px solid #ccd6c7;
+    border-radius: 10px;
+    background: #f7f9f3;
+}
+
+.date-picker-summary > p
+{
+    margin: 0 0 12px;
+    font-size: 15px;
+    font-weight: 600;
+    overflow-wrap: anywhere;
+}
+
+.date-picker-summary .date-picker-trigger
+{
+    min-height: 36px;
+    padding: 6px 0;
+    border: 0;
+    background: transparent;
+    font-weight: 600;
+    color: #194f40;
+}
+
+.date-picker-help
+{
+    margin: 0 0 12px;
+    font-size: 12px;
+    color: #687469;
+}
+
+.date-picker-actions
+{
+    display: flex;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.date-picker-actions button
+{
+    justify-content: center;
+    padding: 10px;
+}
+
+.date-picker-actions .date-picker-clear
+{
+    background: #eef2e7;
+    color: #194f40;
+}
+
+.date-picker-popover .rdp-range_middle .rdp-day_button
+{
+    border-radius: 0;
+    background: #eef2e7;
+    color: #194f40;
+}
