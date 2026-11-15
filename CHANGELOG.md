@@ -7,6 +7,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 ## [Unreleased]
 
 ### Added
+- Optional state/province, country, postal code, radius, and page-size event filters,
+  forwarded to Ticketmaster with numeric validation and blank values omitted.
 - Optional keyword filter for Ticketmaster city search, with labeled inputs and
   blank keywords omitted from provider requests.
 - Frontend Ticketmaster city search showing the first five returned events in
@@ -31,6 +33,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Established the workspace root as the runnable project with setup and test instructions.
 
 ### Fixed
+- Forward selected event dates through FastAPI to Ticketmaster as an event-local
+  range including the end day; reject invalid and reversed dates.
 - Replace native event date inputs with one shadcn/ui-style range calendar,
   a compact date summary, and Change dates, Apply dates, and Clear dates actions.
 - Wire event search to an independent Ticketmaster client; return controlled errors
