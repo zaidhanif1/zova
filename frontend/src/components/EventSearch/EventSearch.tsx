@@ -7,6 +7,15 @@ import { useState } from "react";
 import DatePicker from "../DatePicker/DatePicker";
 import type { FormEvent } from "react";
 
+interface OptionalEventSearchParams
+{
+    stateCode?: string;
+    countryCode?: string;
+    postalCode?: string;
+    radius?: string;
+    size?: string;
+}
+
 interface TicketmasterEvent
 {
     name?: string;
@@ -85,6 +94,11 @@ export default function EventSearch()
     const [endDate, setEndDate] = useState("");
 
     const [keyword, setKeyword] = useState("");
+    const [stateCode, setStateCode] = useState("");
+    const [countryCode, setCountryCode] = useState("");
+    const [postalCode, setPostalCode] = useState("");
+    const [radius, setRadius] = useState("");
+    const [size, setSize] = useState("");
 
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -111,6 +125,18 @@ export default function EventSearch()
 
 
 
+        if (radius.trim() && (!Number.isFinite(Number(radius)) || Number(radius) < 0))
+        {
+            setError("Enter a nonnegative search radius.");
+            return;
+        }
+
+        if (size.trim() && (!Number.isSafeInteger(Number(size)) || Number(size) <= 0))
+        {
+            setError("Enter a positive integer for results per page.");
+            return;
+        }
+
         setSubmittedCity(queryCity);
         setIsLoading(true);
 
@@ -121,8 +147,18 @@ export default function EventSearch()
                 city: queryCity,
             });
 
+            const filters: OptionalEventSearchParams =
+            {
+                stateCode: stateCode.trim(),
+                countryCode: countryCode.trim(),
+                postalCode: postalCode.trim(),
+                radius: radius.trim(),
+                size: size.trim(),
+            };
+
             const optionalParams =
             {
+                ...filters,
                 keyword: queryKeyword,
                 start_date: startDate,
                 end_date: endDate,
@@ -230,6 +266,87 @@ export default function EventSearch()
 
                     <p className="input-help">Narrow your search, or leave blank for all events.</p>
 
+                    <label htmlFor="event-stateCode">State/province code (optional)</label>
+
+                    <div className="event-input">
+                        <input
+                            id="event-stateCode"
+                            type="text"
+                            placeholder="e.g. NY"
+                            value={stateCode}
+                            disabled={isLoading}
+                            onChange={(event) => setStateCode(event.target.value)}
+                        />
+                    </div>
+
+                    <p className="input-help">Leave blank to search all locations matching the other fields.</p>
+
+                    <label htmlFor="event-countryCode">Country code (optional)</label>
+
+                    <div className="event-input">
+                        <input
+                            id="event-countryCode"
+                            type="text"
+                            placeholder="e.g. US"
+                            minLength={2}
+                            maxLength={2}
+                            value={countryCode}
+                            disabled={isLoading}
+                            onChange={(event) => setCountryCode(event.target.value)}
+                        />
+                    </div>
+
+                    <p className="input-help">Leave blank to search all locations matching the other fields.</p>
+
+                    <label htmlFor="event-postalCode">Postal/ZIP code (optional)</label>
+
+                    <div className="event-input">
+                        <input
+                            id="event-postalCode"
+                            type="text"
+                            placeholder="e.g. 10001"
+                            value={postalCode}
+                            disabled={isLoading}
+                            onChange={(event) => setPostalCode(event.target.value)}
+                        />
+                    </div>
+
+                    <p className="input-help">Leave blank to search all locations matching the other fields.</p>
+
+                    <label htmlFor="event-radius">Search radius (optional)</label>
+
+                    <div className="event-input">
+                        <input
+                            id="event-radius"
+                            type="number"
+                            placeholder="e.g. 25"
+                            min={0}
+                            step="any"
+                            value={radius}
+                            disabled={isLoading}
+                            onChange={(event) => setRadius(event.target.value)}
+                        />
+                    </div>
+
+                    <p className="input-help">Leave blank to use the default radius.</p>
+
+                    <label htmlFor="event-size">Results per page (optional)</label>
+
+                    <div className="event-input">
+                        <input
+                            id="event-size"
+                            type="number"
+                            placeholder="e.g. 20"
+                            min={1}
+                            step={1}
+                            value={size}
+                            disabled={isLoading}
+                            onChange={(event) => setSize(event.target.value)}
+                        />
+                    </div>
+
+                    <p className="input-help">Provider page size; up to five events are displayed.</p>
+
                     <fieldset className="date-range" aria-describedby="event-date-help">
                         <legend>Event dates <span>(optional)</span></legend>
 
@@ -245,7 +362,7 @@ export default function EventSearch()
                         />
 
                         <p className="input-help" id="event-date-help">
-                            Choose a date range, or leave blank for all dates.
+                            Choose event-local dates, including the end day, or leave blank for all dates.
                         </p>
                     </fieldset>
 

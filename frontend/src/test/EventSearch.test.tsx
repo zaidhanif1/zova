@@ -197,3 +197,70 @@ test("Escape discards a draft date selection", async () =>
     expect(screen.queryByRole("dialog")).toBeNull();
     expect(screen.getByText("Any dates")).toBeTruthy();
 });
+
+test("forwards optional filters with exact parameter names and preserves zero radius", async () =>
+{
+    const fetchMock = vi.fn().mockResolvedValue(response({}));
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EventSearch />);
+
+    for (const [label, value] of [
+        ["State/province code", " NY "],
+        ["Country code", "US"],
+        ["Postal/ZIP code", " 10001 "],
+        ["Search radius", "0"],
+        ["Results per page", "7"],
+    ])
+    {
+        fireEvent.change(screen.getByLabelText(`${label} (optional)`),
+        {
+            target: { value },
+        });
+    }
+
+    submitCity("Boston");
+    await screen.findByText(/No events found/);
+    expect(fetchMock).toHaveBeenCalledWith(
+        "/get_events?city=Boston&stateCode=NY&countryCode=US&postalCode=10001&radius=0&size=7"
+    );
+});
+
+test.each([
+    ["Search radius", "-1", "nonnegative"],
+    ["Results per page", "0", "positive integer"],
+    ["Results per page", "1.5", "positive integer"],
+])("rejects invalid %s %s before fetching", async (label, value, message) =>
+{
+    const fetchMock = vi.fn();
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EventSearch />);
+    fireEvent.change(screen.getByLabelText(`${label} (optional)`),
+    {
+        target: { value },
+    });
+    submitCity();
+    expect(await screen.findByRole("alert")).toHaveProperty("textContent", expect.stringContaining(message));
+    expect(fetchMock).not.toHaveBeenCalled();
+});
+
+test("omits whitespace location filters", async () =>
+{
+    const fetchMock = vi.fn().mockResolvedValue(response({}));
+
+    vi.stubGlobal("fetch", fetchMock);
+    render(<EventSearch />);
+
+    for (const label of ["State/province code", "Country code", "Postal/ZIP code"])
+    {
+        fireEvent.change(screen.getByLabelText(`${label} (optional)`),
+        {
+            target: { value: "  " },
+        });
+    }
+
+    submitCity("Boston");
+    await screen.findByText(/No events found/);
+    expect(fetchMock).toHaveBeenCalledWith("/get_events?city=Boston");
+});
