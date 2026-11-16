@@ -33,6 +33,8 @@ Format inspired by [Keep a Changelog](https://keepachangelog.com/en/1.1.0/); ver
 - Established the workspace root as the runnable project with setup and test instructions.
 
 ### Fixed
+- Repair Ticketmaster candidate normalization imports, venue extraction, and
+  timezone conversion, and restore the candidate model's valid indentation.
 - Forward selected event dates through FastAPI to Ticketmaster as an event-local
   range including the end day; reject invalid and reversed dates.
 - Replace native event date inputs with one shadcn/ui-style range calendar,

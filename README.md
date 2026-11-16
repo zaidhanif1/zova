@@ -87,6 +87,12 @@ The synthetic planner does not need a key. `GET /get_events?city=Boston`
 returns provider JSON. Blank cities return 400, missing keys return 503, and
 provider request failures or invalid JSON objects return 502.
 
+The internal `normalize_ticketmaster_event` helper converts a provider event to
+an `ActivityCandidate`, preserving its event-local timezone and optional listed
+USD price. It rejects missing schedule details and dates/times marked TBD or TBA.
+Candidates have no assumed duration and are not yet connected to the planner
+or the HTTP response. Listed prices do not establish a verified total cost.
+
 The editable installation makes `zova` importable from
 `src/zova`; use `zova.api:app`, without a `src` prefix or a custom `PYTHONPATH`.
 Keep `--reload` for local development.

@@ -51,6 +51,27 @@ class Activity(Model):
         return self
 
 
+class ActivityCandidate(Model):
+    id: str
+    title: str
+    destination: str
+    categories: tuple[str, ...] = ()
+
+    starts_at: AwareDatetime
+
+    venue_name: str | None = None
+    latitude: float | None = None
+    longitude: float | None = None
+
+    min_listed_price: Decimal | None = Field(default=None, ge=0)
+    duration_minutes: int | None = Field(default=None, gt=0)
+
+    url: str | None = None
+    status: str | None = None
+
+    source: Literal["ticketmaster"] = "ticketmaster"
+
+
 class Itinerary(Model):
     activities: tuple[Activity, ...]
 
