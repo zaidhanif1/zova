@@ -26,6 +26,27 @@ python3 -m venv .venv
 ```
 
 The installed `zova` console command also runs the same demo.
+To use the virtual environment's `python`, `pip`, and `zova` commands in your
+current terminal, activate it first:
+
+```bash
+source .venv/bin/activate
+python --version
+python -m pip check
+```
+
+In PowerShell, activate with `.venv/Scripts/Activate.ps1`. Run `deactivate`
+to leave the environment. Select `.venv/bin/python` (or the Windows equivalent)
+as your editor's Python interpreter too.
+
+For Python 3.14 specifically, create the environment with
+`python3.14 -m venv .venv` once that interpreter is installed. If using `uv`,
+use `uv python install 3.14` followed by `uv venv --python 3.14 --seed .venv`,
+then install `'.[dev]'` as above. An existing environment keeps the Python
+version it was created with; preserve or move it before creating a replacement.
+On Ubuntu, a missing `ensurepip` error with the system Python means its matching
+`python3.X-venv` package is needed.
+
 Use `--budget` to override the budget for a single run without editing the profile:
 
 ```powershell
