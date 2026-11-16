@@ -237,3 +237,72 @@ def test_route_rejects_invalid_dates(dates):
         response = get_events({"city": "Boston", **dates})
         assert response.status_code == 422
         fetch.assert_not_awaited()
+
+
+@pytest.fixture
+def provider_event():
+    return {
+        "id": "fixture-event",
+        "name": "Synthetic concert",
+        "dates": {"start": {"dateTime": "2026-12-01T01:00:00Z"}},
+        "_embedded": {"venues": [{"city": {"name": "Boston"}, "timezone": "America/New_York"}]},
+    }
+
+
+def test_normalize_event(provider_event):
+    from decimal import Decimal
+
+    from zova.clients.ticketmaster import normalize_ticketmaster_event
+
+    provider_event["classifications"] = [
+        {"segment": {"name": "Other"}},
+        {"primary": True, "segment": {"name": "Music"}, "genre": None},
+    ]
+    provider_event["priceRanges"] = [
+        {"currency": "USD", "min": 30},
+        {"currency": "USD", "min": "20.50"},
+        {"currency": "EUR", "min": 1},
+    ]
+    candidate = normalize_ticketmaster_event(provider_event)
+    assert candidate.id == "ticketmaster:fixture-event"
+    assert candidate.starts_at.isoformat() == "2026-11-30T20:00:00-05:00"
+    assert candidate.categories == ("Music",)
+    assert candidate.min_listed_price == Decimal("20.50")
+    assert candidate.source == "ticketmaster"
+    assert candidate.duration_minutes is None
+
+
+def test_normalize_missing_optional_details(provider_event):
+    from zova.clients.ticketmaster import normalize_ticketmaster_event
+
+    candidate = normalize_ticketmaster_event(provider_event)
+    assert candidate.categories == ()
+    assert candidate.min_listed_price is None
+    assert candidate.latitude is None
+    assert candidate.venue_name is None
+
+
+@pytest.mark.parametrize("flag", ["dateTBD", "dateTBA", "timeTBA", "noSpecificTime"])
+def test_normalize_rejects_unscheduled_event(provider_event, flag):
+    from zova.clients.ticketmaster import normalize_ticketmaster_event
+
+    provider_event["dates"]["start"][flag] = True
+    with pytest.raises(ValueError, match="no specific"):
+        normalize_ticketmaster_event(provider_event)
+
+
+@pytest.mark.parametrize("timestamp", [None, "invalid", "2026-12-01T01:00:00"])
+def test_normalize_rejects_invalid_start(provider_event, timestamp):
+    from zova.clients.ticketmaster import normalize_ticketmaster_event
+
+    provider_event["dates"]["start"]["dateTime"] = timestamp
+    with pytest.raises(ValueError):
+        normalize_ticketmaster_event(provider_event)
+
+
+def test_normalize_rejects_missing_venue(provider_event):
+    from zova.clients.ticketmaster import normalize_ticketmaster_event
+
+    provider_event["_embedded"] = None
+    with pytest.raises(ValueError, match="missing required"):
+        normalize_ticketmaster_event(provider_event)
