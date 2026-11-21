@@ -50,14 +50,14 @@ interface TicketmasterSearchResponse
     };
 }
 
-function readEvents(payload: unknown): TicketmasterEvent[]
+function readEvents(payload: unknown): TicketmasterEvent[] //returns an array of TicketmasterEvent objects, or throws an error if the payload is invalid
 {
     if (!payload || typeof payload !== "object" || Array.isArray(payload))
     {
         throw new Error("The event service returned an invalid response. Please try again.");
     }
 
-    const response = payload as TicketmasterSearchResponse;
+    const response = payload as TicketmasterSearchResponse; //compile-time type assertion to treat the payload as a TicketmasterSearchResponse object
     const embedded = response._embedded;
 
     // Ticketmaster can omit _embedded entirely when no events match.
@@ -66,7 +66,7 @@ function readEvents(payload: unknown): TicketmasterEvent[]
         return [];
     }
 
-    if (!embedded || !Array.isArray(embedded.events) || embedded.events.some((event) =>
+    if (!embedded || !Array.isArray(embedded.events) || embedded.events.some((event) => //does the array contain at least one element that is not a TicketmasterEvent object? If so, throw an error
     {
         return !event || typeof event !== "object" || Array.isArray(event);
     }))
@@ -88,15 +88,16 @@ export default function EventSearch()
     const [submittedCity, setSubmittedCity] = useState("");
     const [events, setEvents] = useState<TicketmasterEvent[] | null>(null);
 
-
     const [startDate, setStartDate] = useState("");
-
     const [endDate, setEndDate] = useState("");
 
     const [keyword, setKeyword] = useState("");
+
     const [stateCode, setStateCode] = useState("");
     const [countryCode, setCountryCode] = useState("");
+    
     const [postalCode, setPostalCode] = useState("");
+    
     const [radius, setRadius] = useState("");
     const [size, setSize] = useState("");
 
@@ -114,6 +115,7 @@ export default function EventSearch()
 
         const queryCity = city.trim();
         const queryKeyword = keyword.trim();
+
         setError("");
         setEvents(null);
 
@@ -122,8 +124,6 @@ export default function EventSearch()
             setError("Enter a city to search for events.");
             return;
         }
-
-
 
         if (radius.trim() && (!Number.isFinite(Number(radius)) || Number(radius) < 0))
         {
@@ -142,7 +142,7 @@ export default function EventSearch()
 
         try
         {
-            const searchParams = new URLSearchParams(
+            const searchParams = new URLSearchParams( // Passing a POJO (TS type: Record<string, string>) to initialize query parameters
             {
                 city: queryCity,
             });
@@ -187,7 +187,7 @@ export default function EventSearch()
                 throw new Error(`Could not load events (HTTP ${response.status}). Please try again.`);
             }
 
-            setEvents(readEvents(await response.json()));
+            setEvents(readEvents(await response.json())); //parses into usable java script object, then passes to readEvents to validate and extract the events array
         }
         catch (requestError)
         {
