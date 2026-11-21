@@ -47,7 +47,9 @@ async def get_ticketmaster_events(
     start_date: date | None = None,
     end_date: date | None = None,
 ) -> dict:
+    
     city = city.strip()
+
     if not city:
         raise HTTPException(status_code=400, detail="City parameter is required")
 
@@ -67,11 +69,11 @@ async def get_ticketmaster_events(
             "size": size,
             "start_date": start_date,
             "end_date": end_date,
+            "keyword": keyword,
+            "api_key": api_key
         }
         results = await fetch_ticketmaster_events(
             city,
-            api_key=api_key,
-            keyword=keyword,
             **{name: value for name, value in filters.items() if value is not None},
         )
 
@@ -79,7 +81,6 @@ async def get_ticketmaster_events(
         events = results.get("_embedded", {}).get("events", [])
         first_event = events[:1]
 
-        print(first_event)
         return results
     except httpx.HTTPError:
         raise HTTPException(status_code=502, detail="Failed to fetch Ticketmaster events") from None
